@@ -58,6 +58,24 @@ $staticCommands = [
     ],
 ];
 
+// Check for --project argument and extract it
+$projectUrl = null;
+$filteredArgv = [];
+for ($i = 0; $i < count($argv); $i++) {
+    if ($argv[$i] === '--project' && isset($argv[$i + 1])) {
+        $projectUrl = $argv[$i + 1];
+        $i++; // Skip the next argument (the URL)
+    } else {
+        $filteredArgv[] = $argv[$i];
+    }
+}
+$argv = $filteredArgv;
+
+// Set global project URL for use in getRepoPath()
+if ($projectUrl) {
+    $GLOBALS['bb_cli_project_url'] = $projectUrl;
+}
+
 $userBaseAction = $argv[1] ?? null;
 
 // Print version
@@ -70,6 +88,9 @@ if (in_array($userBaseAction, $staticCommands['version'])) {
 if (is_null($userBaseAction) || in_array($userBaseAction, $staticCommands['help'])) {
     o('Available actions:', 'green');
     o(array_keys($actions), 'green');
+    o('', 'white');
+    o('Global options:', 'green');
+    o('  --project <repo>  Work with repository (e.g., --project "owner/repo" or --project "https://bitbucket.org/owner/repo")', 'yellow');
     exit(0);
 }
 
@@ -102,10 +123,11 @@ if (in_array($userAction, $staticCommands['autocomplete'])) {
     exit(0);
 }
 
-// Check if git folder exists
-if ($actionClass::CHECK_GIT_FOLDER) {
+// Check if git folder exists (skip if --project is used)
+if ($actionClass::CHECK_GIT_FOLDER && !$projectUrl) {
     if (!is_dir(getcwd().'/.git')) {
         o('ERROR: No git repository found in current directory.', 'red');
+        o('Use --project "owner/repo" to work with remote repository.', 'yellow');
         exit(1);
     }
 }

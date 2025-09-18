@@ -26,6 +26,32 @@ if (!function_exists('array_get')) {
 if (!function_exists('getRepoPath')) {
     function getRepoPath()
     {
+        // Check if project URL is provided via --project argument
+        if (isset($GLOBALS['bb_cli_project_url'])) {
+            $projectUrl = $GLOBALS['bb_cli_project_url'];
+
+            // If it's just owner/repo format (no URL), return as-is
+            if (preg_match('#^[a-zA-Z0-9_.-]+/[a-zA-Z0-9_.-]+$#', $projectUrl)) {
+                return $projectUrl;
+            }
+
+            // Parse bitbucket URL to get owner/repo
+            $patterns = [
+                '#https?://bitbucket\.org/(.+?)/?(?:\.git)?/?$#',
+                '#git@bitbucket\.org:(.+?)\.git$#',
+                '#.*bitbucket\.org[:,/](.+?)(?:\.git)?/?$#'
+            ];
+
+            foreach ($patterns as $pattern) {
+                if (preg_match($pattern, $projectUrl, $matches)) {
+                    return rtrim($matches[1], '/');
+                }
+            }
+
+            throw new \Exception('Invalid repository format. Expected: "owner/repo" or "https://bitbucket.org/owner/repo"');
+        }
+
+        // Default behavior: get from local git config
         $remoteOrigin = trim(exec('git config --get remote.origin.url'));
         preg_match('#.*bitbucket\.org[:,/](.+?)\.git#', $remoteOrigin, $matches);
 
