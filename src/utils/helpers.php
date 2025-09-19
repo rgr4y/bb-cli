@@ -38,8 +38,7 @@ if (!function_exists('getRepoPath')) {
             // Parse bitbucket URL to get owner/repo
             $patterns = [
                 '#https?://bitbucket\.org/(.+?)/?(?:\.git)?/?$#',
-                '#git@bitbucket\.org:(.+?)\.git$#',
-                '#.*bitbucket\.org[:,/](.+?)(?:\.git)?/?$#'
+                '#git@bitbucket\.org:(.+?)\.git$#'
             ];
 
             foreach ($patterns as $pattern) {
