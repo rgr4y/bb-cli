@@ -58,13 +58,16 @@ $staticCommands = [
 // ANSI color palette — defined in src/utils/helpers.php::ansi()
 $c = ansi();
 
-// Check for --project argument and extract it
+// Check for --project and --json arguments and extract them
 $projectUrl = null;
 $filteredArgv = [];
 for ($i = 0; $i < count($argv); $i++) {
     if ($argv[$i] === '--project' && isset($argv[$i + 1])) {
         $projectUrl = $argv[$i + 1];
         $i++;
+    } elseif ($argv[$i] === '--json') {
+        $GLOBALS['BB_JSON_MODE']   = true;
+        $GLOBALS['BB_JSON_OUTPUT'] = [];
     } else {
         $filteredArgv[] = $argv[$i];
     }
@@ -73,6 +76,18 @@ $argv = $filteredArgv;
 
 if ($projectUrl) {
     $GLOBALS['bb_cli_project_url'] = $projectUrl;
+}
+
+if (!empty($GLOBALS['BB_JSON_MODE'])) {
+    register_shutdown_function(function () {
+        $out = $GLOBALS['BB_JSON_OUTPUT'];
+        // If every entry is an associative array (single object commands like view),
+        // unwrap the outer array so the output is a single object, not [[...]].
+        if (count($out) === 1) {
+            $out = $out[0];
+        }
+        echo json_encode($out, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)."\n";
+    });
 }
 
 $userBaseAction = $argv[1] ?? null;
@@ -239,6 +254,9 @@ if (is_null($userBaseAction) || in_array($userBaseAction, $staticCommands['help'
     echo "    ".$c['yellow']."--project".$R." ".$c['gray']."<owner/repo>".$R;
     echo str_repeat(' ', 10);
     echo $c['dim']."Target a remote repo instead of local git context\n".$R;
+    echo "    ".$c['yellow']."--json".$R;
+    echo str_repeat(' ', 23);
+    echo $c['dim']."Output structured JSON (useful for scripting / LLMs)\n".$R;
     echo "    ".$c['yellow']."--help".$R.", ".$c['yellow']."-h".$R;
     echo str_repeat(' ', 20);
     echo $c['dim']."Show help (global or per-command)\n".$R;

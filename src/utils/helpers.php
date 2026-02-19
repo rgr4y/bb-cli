@@ -99,6 +99,16 @@ if (!function_exists('ansi')) {
 if (!function_exists('o')) {
     function o($data, $color = 'white', $prefix = '', $end = "\033[0m".PHP_EOL)
     {
+        // JSON mode: accumulate structured data, dump at shutdown
+        if (!empty($GLOBALS['BB_JSON_MODE'])) {
+            if (is_array($data)) {
+                $GLOBALS['BB_JSON_OUTPUT'][] = $data;
+            }
+            // scalar strings (status messages like "OK.", "Approved.") are intentionally
+            // skipped in JSON mode — they carry no structured value for machine consumers
+            return;
+        }
+
         // Basic SGR colors used for action output (o() calls in Action classes)
         $colors = [
             'nocolor' => "\033[0m",
