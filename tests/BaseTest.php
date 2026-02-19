@@ -90,4 +90,20 @@ class BaseTest extends TestCase
     {
         $this->assertTrue(method_exists(Pr::class, Pr::DEFAULT_METHOD));
     }
+
+    public function test_comments_alias_resolves(): void
+    {
+        $pr = new Pr();
+        $this->assertSame('comments', $pr->getMethodNameFromAlias('comments'));
+    }
+
+    public function test_comments_method_exists(): void
+    {
+        $this->assertTrue(method_exists(Pr::class, 'comments'));
+    }
+
+    public function test_comments_in_available_commands(): void
+    {
+        $this->assertArrayHasKey('comments', Pr::AVAILABLE_COMMANDS);
+    }
 }
