@@ -93,25 +93,8 @@ if (!empty($GLOBALS['BB_JSON_MODE'])) {
 $userBaseAction = $argv[1] ?? null;
 
 // Help data — command descriptions, colors (references $c), and subcommand docs
+// Ordered by frequency: daily drivers first, setup/meta last.
 $commandHelp = [
-    'auth' => [
-        'desc'  => 'Manage Bitbucket credentials',
-        'color' => $c['cyan'],
-        'subs'  => [
-            ['token', 'Save API token credentials (recommended)'],
-            ['save',  'Save app password credentials (legacy)'],
-            ['show',  'Show current auth config'],
-        ],
-    ],
-    'branch' => [
-        'desc'  => 'Work with branches',
-        'color' => $c['green'],
-        'subs'  => [
-            ['list',        'List all branches'],
-            ['user <name>', 'Filter branches by commit author'],
-            ['name <str>',  'Filter branches by name'],
-        ],
-    ],
     'pr' => [
         'desc'  => 'Pull request management',
         'color' => $c['blue'],
@@ -128,6 +111,15 @@ $commandHelp = [
             ['no-request-changes <id>', 'Remove request-changes'],
             ['decline <id>',            'Decline / close a PR'],
             ['merge <id>',              'Merge a PR'],
+        ],
+    ],
+    'branch' => [
+        'desc'  => 'Work with branches',
+        'color' => $c['green'],
+        'subs'  => [
+            ['list',        'List all branches'],
+            ['user <name>', 'Filter branches by commit author'],
+            ['name <str>',  'Filter branches by name'],
         ],
     ],
     'pipeline' => [
@@ -157,6 +149,15 @@ $commandHelp = [
         'subs'  => [
             ['browse', 'Open repo in browser (default)'],
             ['show',   'Print repo URL'],
+        ],
+    ],
+    'auth' => [
+        'desc'  => 'Manage Bitbucket credentials',
+        'color' => $c['cyan'],
+        'subs'  => [
+            ['token', 'Save API token credentials (recommended)'],
+            ['save',  'Save app password credentials (legacy)'],
+            ['show',  'Show current auth config'],
         ],
     ],
     'git' => [
