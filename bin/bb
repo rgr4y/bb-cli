@@ -103,6 +103,7 @@ $commandHelp = [
             ['view <id>',               'Show PR detail: title, state, reviewers, link'],
             ['diff <id>',               'Show PR diff'],
             ['files <id>',              'List files changed in PR'],
+            ['comments <id>',           'List comments on PR'],
             ['commits <id>',            'List commits in PR'],
             ['create <to> [from]',      'Create PR (defaults to current branch)'],
             ['approve <id>',            'Approve a PR (0 = approve all)'],

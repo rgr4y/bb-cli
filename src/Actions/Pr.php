@@ -25,6 +25,7 @@ class Pr extends Base
         'view'             => 'view, show',
         'diff'             => 'diff, d',
         'files'            => 'files',
+        'comments'         => 'comments',
         'commits'          => 'commits, checks, c',
         'approve'          => 'approve, a',
         'unApprove'        => 'no-approve, na',
@@ -143,6 +144,63 @@ class Pr extends Base
         }
 
         o($result, 'yellow');
+    }
+
+    /**
+     * Get pull request comments.
+     *
+     * @param int $prNumber
+     * @return void
+     *
+     * @throws \Exception
+     */
+    public function comments($prNumber)
+    {
+        $response = $this->makeRequest('GET', "/pullrequests/{$prNumber}/comments");
+        $result = [];
+
+        foreach ($response['values'] ?? [] as $comment) {
+            $entry = [
+                'id'      => $comment['id'],
+                'author'  => array_get($comment, 'author.display_name'),
+                'created' => substr(array_get($comment, 'created_on', ''), 0, 10),
+                'content' => array_get($comment, 'content.raw'),
+            ];
+            if (!empty($comment['inline'])) {
+                $entry['file'] = array_get($comment, 'inline.path');
+                $entry['line'] = array_get($comment, 'inline.to');
+            }
+            $result[] = $entry;
+        }
+
+        if (empty($result)) {
+            o('No comments.', 'gray');
+            return;
+        }
+
+        if (!empty($GLOBALS['BB_JSON_MODE'])) {
+            o($result, 'yellow');
+            return;
+        }
+
+        $cyan   = "\033[0;36m";
+        $yellow = "\033[0;33m";
+        $dim    = "\033[2m\033[38;5;244m";
+        $reset  = "\033[0m";
+        $first  = true;
+
+        foreach ($result as $c) {
+            if (!$first) {
+                echo $dim . "  " . str_repeat('·', 60) . $reset . "\n";
+            }
+            $first = false;
+
+            echo $cyan . "#{$c['id']}" . $reset . "  " . $yellow . $c['author'] . $reset . "  " . $dim . $c['created'] . $reset . "\n";
+            if (!empty($c['file'])) {
+                echo $dim . "  {$c['file']}" . (isset($c['line']) ? ":{$c['line']}" : '') . $reset . "\n";
+            }
+            echo $c['content'] . "\n";
+        }
     }
 
     /**

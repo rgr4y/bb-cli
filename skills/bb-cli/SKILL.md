@@ -1,6 +1,6 @@
 ---
 name: bb-cli
-version: 1.0.0
+version: 1.1.0
 description: >
   Use this skill whenever the user wants to interact with Bitbucket Cloud — PRs, branches,
   pipelines, deployment environments, auth, or browsing a repo. Covers all bb-cli commands:
@@ -37,6 +37,7 @@ bb pr [list]               List open PRs (alias: l)
 bb pr view <id>            Show PR detail — title, state, reviewers, link (alias: show)
 bb pr diff <id>            Show PR diff (alias: d)
 bb pr files <id>           List changed files in PR
+bb pr comments <id>        List comments on a PR
 bb pr commits <id>         List commits / checks (aliases: checks, c)
 bb pr create <to> [from]   Create PR; defaults to current branch as source
 bb pr approve <id>         Approve (0 = approve all open PRs) (alias: a)
