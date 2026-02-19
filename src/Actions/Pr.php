@@ -43,7 +43,7 @@ class Pr extends Base
      */
     public function list($destination = '')
     {
-        $result = [];
+        $prs = [];
 
         foreach ($this->makeRequest('GET', '/pullrequests?state=OPEN')['values'] as $prInfo) {
             if (!empty($destination) &&
@@ -54,34 +54,28 @@ class Pr extends Base
 
             $prDetail = $this->makeRequest('GET', "/pullrequests/{$prInfo['id']}");
 
-            $result[] = [
-                'id' => $prInfo['id'],
-                'author' => array_get($prInfo, 'author.nickname'),
-                'source' => array_get($prInfo, 'source.branch.name'),
-                'destination' => array_get($prInfo, 'destination.branch.name'),
-                'link' => array_get($prInfo, 'links.html.href'),
-                'reviewers' => implode(
-                    ', ',
-                    array_map(function ($reviewer) {
-                        return $reviewer['display_name'];
-                    }, $prDetail['reviewers'])
-                ),
-                'participants' => implode(
-                    ' | ',
-                    array_filter(
-                        array_map(function ($participant) {
-                            return $participant['state'] ? sprintf(
-                                '%s -> %s',
-                                $participant['user']['display_name'],
-                                $participant['state']
-                            ) : null;
-                        }, $prDetail['participants'])
-                    )
-                ),
-            ];
+            $prs[] = $this->buildPrData($prInfo, $prDetail);
         }
 
-        o($result, 'yellow');
+        if (empty($prs)) {
+            o('No open pull requests.', 'gray');
+            return;
+        }
+
+        // JSON mode: hand off the full array and let the shutdown handler emit it
+        if (!empty($GLOBALS['BB_JSON_MODE'])) {
+            o($prs, 'yellow');
+            return;
+        }
+
+        $first = true;
+        foreach ($prs as $pr) {
+            if (!$first) {
+                echo "\033[2m\033[38;5;244m  " . str_repeat('·', 60) . "\033[0m\n";
+            }
+            $first = false;
+            $this->printPr($pr);
+        }
     }
 
     /**
@@ -95,20 +89,14 @@ class Pr extends Base
     public function view($prNumber)
     {
         $pr = $this->makeRequest('GET', "/pullrequests/{$prNumber}");
+        $data = $this->buildPrData($pr, $pr);
 
-        o([
-            'id'          => $pr['id'],
-            'title'       => $pr['title'],
-            'state'       => $pr['state'],
-            'author'      => array_get($pr, 'author.nickname'),
-            'source'      => array_get($pr, 'source.branch.name'),
-            'destination' => array_get($pr, 'destination.branch.name'),
-            'link'        => array_get($pr, 'links.html.href'),
-            'reviewers'   => implode(', ', array_map(fn($r) => $r['display_name'], $pr['reviewers'])),
-            'participants' => implode(' | ', array_filter(array_map(function ($p) {
-                return $p['state'] ? sprintf('%s -> %s', $p['user']['display_name'], $p['state']) : null;
-            }, $pr['participants']))),
-        ], 'yellow');
+        if (!empty($GLOBALS['BB_JSON_MODE'])) {
+            o($data, 'yellow');
+            return;
+        }
+
+        $this->printPr($data);
     }
 
     /**
@@ -321,6 +309,53 @@ class Pr extends Base
         o([
             'pullRequests' => $responses,
         ]);
+    }
+
+    /**
+     * Build a normalized PR data array from API response(s).
+     * $prInfo = list item, $prDetail = full PR object (same for view).
+     */
+    private function buildPrData(array $prInfo, array $prDetail): array
+    {
+        $reviewers = implode(', ', array_map(
+            fn($r) => $r['display_name'],
+            $prDetail['reviewers'] ?? []
+        ));
+
+        $participants = implode(' | ', array_filter(array_map(function ($p) {
+            return $p['state'] ? sprintf('%s → %s', $p['user']['display_name'], $p['state']) : null;
+        }, $prDetail['participants'] ?? [])));
+
+        $data = [
+            'id'          => $prInfo['id'],
+            'author'      => array_get($prInfo, 'author.nickname'),
+            'source'      => array_get($prInfo, 'source.branch.name'),
+            'destination' => array_get($prInfo, 'destination.branch.name'),
+            'link'        => array_get($prInfo, 'links.html.href'),
+        ];
+
+        if (!empty($prDetail['title'])) {
+            $data = ['id' => $data['id'], 'title' => $prDetail['title'], 'state' => $prDetail['state']] + $data;
+        }
+
+        if ($reviewers)    $data['reviewers']    = $reviewers;
+        if ($participants) $data['participants'] = $participants;
+
+        return $data;
+    }
+
+    /**
+     * Print a single PR row with aligned key/value formatting.
+     */
+    private function printPr(array $pr): void
+    {
+        $cyan   = "\033[0;36m";
+        $yellow = "\033[0;33m";
+        $reset  = "\033[0m";
+
+        foreach ($pr as $key => $value) {
+            echo $cyan . ucfirst($key) . ':' . $reset . ' ' . $yellow . $value . $reset . "\n";
+        }
     }
 
     /**
