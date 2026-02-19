@@ -55,7 +55,7 @@ if (!function_exists('getRepoPath')) {
         preg_match('#.*bitbucket\.org[:,/](.+?)\.git#', $remoteOrigin, $matches);
 
         if (!$matches) {
-            throw new \Exception('Cannot get repository info. Are you sure this is a bitbucket repository?');
+            throw new \Exception('No Bitbucket remote found. Run from a repo with a bitbucket.org origin, or pass --project owner/repo.');
         }
 
         return $matches[1];

@@ -175,8 +175,7 @@ class Base
     private function checkAuth()
     {
         if (!userConfig('auth')) {
-            o('You have to configure auth info to use this command.', 'red');
-            o('Run "bb auth" first.', 'yellow');
+            o('Not authenticated. Run "bb auth token" first.', 'red');
             exit(1);
         }
     }

@@ -184,6 +184,8 @@ $commandHelp = [
     ],
 ];
 
+$commandHelp = array_reverse($commandHelp); // Show more common commands first in help output
+
 // Print version
 if (in_array($userBaseAction, $staticCommands['version'])) {
     o('Version: '.APP_VERSION, 'green');
@@ -351,8 +353,7 @@ if (in_array($userAction, $staticCommands['autocomplete'])) {
 // Check if git folder exists (skip if --project is used)
 if ($actionClass::CHECK_GIT_FOLDER && !$projectUrl) {
     if (!is_dir(getcwd().'/.git')) {
-        o('ERROR: No git repository found in current directory.', 'red');
-        o('Use --project "owner/repo" to work with remote repository.', 'yellow');
+        o('No git repository found here. cd into a repo or pass --project owner/repo.', 'red');
         exit(1);
     }
 }

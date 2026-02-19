@@ -45,7 +45,7 @@ class Browse extends Base
 
         o($bitbucketUrl);
         if (!$openBrowserCommand) {
-            o('Cannot get operation system info', 'red');
+            o('Unknown OS — could not open browser. URL printed above.', 'red');
             exit(1);
         }
 
