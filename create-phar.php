@@ -22,3 +22,6 @@ $phar->buildFromDirectory(dirname(__FILE__), '[src|config|phar\-index\.php]');
 $phar->setStub("#!/usr/bin/env php\n".$phar->createDefaultStub($pharIndexFile));
 
 unlink($pharIndexFile);
+
+rename('bb.phar', 'bb');
+chmod('bb', 0755);

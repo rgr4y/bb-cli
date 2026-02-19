@@ -1,45 +1,123 @@
-# Bitbucket Rest API CLI
+# bb
 
-Use Bitbucket from command line. With this app you can see pull request, pipelines, branches etc. from your terminal.
+A fast, opinionated Bitbucket CLI. Manage pull requests, branches, pipelines,
+and environments from your terminal — no browser required.
 
-![Bitbucket CLI](ss.gif)
+```
+  ██████╗ ██████╗      ██████╗██╗     ██╗
+  ██╔══██╗██╔══██╗    ██╔════╝██║     ██║
+  ██████╔╝██████╔╝    ██║     ██║     ██║
+  ██╔══██╗██╔══██╗    ██║     ██║     ██║
+  ██████╔╝██████╔╝    ╚██████╗███████╗██║
+  ╚═════╝ ╚═════╝      ╚═════╝╚══════╝╚═╝
+```
+
+![bb demo](demo.gif)
+
+## Requirements
+
+- PHP 8.3+ with `curl`, `mbstring`, `json` extensions
+- A Bitbucket Cloud account with an [API token](https://support.atlassian.com/bitbucket-cloud/docs/api-tokens/)
 
 ## Installation
 
-__NOTE__: Before install this package, you should have **PHP >= 7** installed on your machine. For an alternative, use Docker instructions below.
+**From a release binary** (no PHP needed at runtime — it's a self-contained PHAR):
 
-* Download standalone binary from [releases](https://github.com/bb-cli/bb-cli/releases)
-* Move downloaded file to path like `mv bb /usr/local/bin/bb` or `mv bb ~/.local/bin/bb`
-* For testing `bb help`
-* Let's move on to the [auth.](https://bb-cli.github.io/authentication)
-
-## Docker Setup
-As an alternative to having a PHP runtime installed locally, you can make use of a Docker container to run Bitbucket CLI.
-First, make sure to create `~/.bitbucket-rest-cli-config.json` beforehand:
-```shell
-touch ~/.bitbucket-rest-cli-config.json
+```sh
+curl -L https://github.com/rgr4y/bb-cli/releases/latest/download/bb -o bb
+chmod +x bb
+./bb install        # installs to ~/.local/bin/bb
 ```
 
-Then, run the tool:
-```shell
-docker run -it --rm --mount type=bind,source="$HOME/.bitbucket-rest-cli-config.json",target=/root/.bitbucket-rest-cli-config.json --mount type=bind,source="$(pwd)",target=/workdir,readonly ghcr.io/bb-cli/bb-cli help
+**From source:**
+
+```sh
+git clone https://github.com/rgr4y/bb-cli
+cd bb-cli
+make install        # builds + copies to ~/.local/bin/bb
 ```
 
-For ease, configure this as an alias in your chosen shell:
-```shell
-alias bb='docker run -it --rm --mount type=bind,source="$HOME/.bitbucket-rest-cli-config.json",target=/root/.bitbucket-rest-cli-config.json --mount type=bind,source="$(pwd)",target=/workdir,readonly ghcr.io/bb-cli/bb-cli'
+## Setup
+
+```sh
+bb auth             # save your Bitbucket API token
+bb git setup        # configure git to auto-authenticate with your token
 ```
 
-Then use `bb help` and `bb auth` as expected in the documentation.
+`bb auth` will verify your credentials against the Bitbucket API before saving.
+`bb git setup` installs a git credential helper scoped to `bitbucket.org` — no
+more password prompts on push/pull.
+
+> **Note:** App passwords still work via `bb auth save`, but Bitbucket is
+> deprecating them. API tokens are the way forward.
 
 ## Usage
 
-[View the documentation](https://bb-cli.github.io) for usage information.
+```
+bb <command> [subcommand] [args] [--project owner/repo]
+```
 
-## Development
+Run `bb --help` for the full command reference. Key workflows:
 
-This tool developed with help of [Github Copilot](https://copilot.github.com) :octocat:
+```sh
+# Pull requests
+bb pr list                          # open PRs in current repo
+bb pr create main                   # open PR from current branch → main
+bb pr files 42                      # files changed in PR #42
+bb pr approve 42                    # approve PR #42
+
+# Branches
+bb branch list                      # all branches
+bb branch user rob                  # branches by author
+bb branch name feat                 # branches matching "feat"
+
+# Pipelines
+bb pipeline latest                  # latest pipeline status
+bb pipeline wait                    # block until pipeline finishes
+
+# Work on a remote repo without cloning
+bb pr list --project org/repo
+```
+
+## Commands
+
+| Command    | Description                          |
+|------------|--------------------------------------|
+| `auth`     | Manage credentials                   |
+| `branch`   | List and filter branches             |
+| `pr`       | Pull request management              |
+| `pipeline` | Pipeline status and control          |
+| `env`      | Deployment environment variables     |
+| `browse`   | Open repo in browser                 |
+| `git`      | Git credential helper setup          |
+| `install`  | Install bb to PATH                   |
+| `upgrade`  | Self-update from latest release      |
+
+Run `bb <command> --help` for subcommand details.
+
+## Building
+
+```sh
+make build          # produces ./bb (self-contained PHAR)
+make install        # build + install to ~/.local/bin/bb
+make demo           # build, install, record demo.gif (requires vhs)
+make clean          # remove build artifacts
+```
+
+## Config
+
+Credentials are stored in `~/.bitbucket-rest-cli-config.json`. The file is
+created on first `bb auth` run. Keep it out of version control.
+
+## Credits
+
+Forked from [bb-cli/bb-cli](https://github.com/bb-cli/bb-cli), originally
+created by [Celal Akyüz](https://github.com/cllakyz) and
+[Dinçer Demircioğlu](https://github.com/dinncer), with contributions from
+Erşan Işık, Semih Erdogan, and others. This fork adds API token support,
+a git credential helper, a built-in installer, an overhauled help system,
+and a Makefile-based build.
 
 ## License
 
-The MIT License (MIT). Please see [License File](LICENSE) for more information.
+MIT — see [LICENSE](LICENSE).

@@ -62,19 +62,54 @@ if (!function_exists('getRepoPath')) {
     }
 }
 
+if (!function_exists('ansi')) {
+    /**
+     * Returns the ANSI 256-color palette used by the help renderer in bin/bb.
+     * Keys: R, bold, dim, red, orange, yellow, green, teal, blue, purple, gray, white.
+     *
+     * @return array<string,string>
+     */
+    function ansi()
+    {
+        // Palette based on Bitbucket's UI colors:
+        // cyan/teal  = Bitbucket icon + active nav  (#00C7E6 → 38;5;45)
+        // blue       = Atlassian brand blue          (#2684FF → 38;5;75)
+        // navy       = sidebar background accent     (#1C2B41 → dim white)
+        // slate      = inactive nav text             (#9FADBC → 38;5;110)
+        // white      = primary text                  (#FFFFFF → 38;5;255)
+        // red        = destructive actions           (#FF5630 → 38;5;203)
+        // yellow     = warnings / args               (#FFAB00 → 38;5;214)
+        // green      = success                       (#36B37E → 38;5;78)
+        return [
+            'R'      => "\033[0m",
+            'bold'   => "\033[1m",
+            'dim'    => "\033[2m",
+            'cyan'   => "\033[38;5;45m",   // Bitbucket icon teal / active nav
+            'blue'   => "\033[38;5;75m",   // Atlassian brand blue
+            'slate'  => "\033[38;5;110m",  // inactive nav / secondary text
+            'white'  => "\033[38;5;255m",  // primary text
+            'gray'   => "\033[38;5;244m",  // muted text / hints
+            'red'    => "\033[38;5;203m",  // errors / destructive
+            'yellow' => "\033[38;5;214m",  // warnings / args
+            'green'  => "\033[38;5;78m",   // success
+        ];
+    }
+}
+
 if (!function_exists('o')) {
     function o($data, $color = 'white', $prefix = '', $end = "\033[0m".PHP_EOL)
     {
+        // Basic SGR colors used for action output (o() calls in Action classes)
         $colors = [
             'nocolor' => "\033[0m",
-            'red' => "\033[0;31m",
-            'green' => "\033[0;32m",
-            'yellow' => "\033[0;33m",
-            'blue' => "\033[0;34m",
+            'red'     => "\033[0;31m",
+            'green'   => "\033[0;32m",
+            'yellow'  => "\033[0;33m",
+            'blue'    => "\033[0;34m",
             'magenta' => "\033[0;35m",
-            'cyan' => "\033[0;36m",
-            'white' => "\033[0;37m",
-            'gray' => "\033[0;90m",
+            'cyan'    => "\033[0;36m",
+            'white'   => "\033[0;37m",
+            'gray'    => "\033[0;90m",
         ];
 
         if (is_array($data)) {
@@ -104,9 +139,10 @@ if (!function_exists('getUserInput')) {
             $default = '';
         }
 
-        $input = readline($question.' '.$default);
+        $prompt = $default !== '' ? $question.' ['.$default.']: ' : $question.' ';
+        $input = readline($prompt);
 
-        if ($input === false) {
+        if ($input === false || $input === '') {
             return $default;
         }
 

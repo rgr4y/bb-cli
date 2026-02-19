@@ -3,8 +3,14 @@
 
 require_once __DIR__.'/../src/utils/helpers.php';
 require_once __DIR__.'/../src/Base.php';
+require_once __DIR__.'/../src/Actions/Git.php';
 
 const APP_VERSION = '#APP_VERSION#';
+
+// When invoked as a git credential helper, handle the git credential protocol directly.
+if (basename($argv[0]) === 'git-credential-bb') {
+    \BBCli\BBCli\Actions\Git::handleCredentialProtocol($argv[1] ?? 'get');
+}
 
 if (version_compare(phpversion(), '7.0.0') < 0) {
     o('Your PHP version must be equal or higher than "7.0.0" to use bb-cli', 'red');
@@ -32,31 +38,25 @@ foreach (scandir($actionsFolder) as $file) {
 }
 
 $actions = [
-    'pr' => \BBCli\BBCli\Actions\Pr::class,
+    'pr'       => \BBCli\BBCli\Actions\Pr::class,
     'pipeline' => \BBCli\BBCli\Actions\Pipeline::class,
-    'branch' => \BBCli\BBCli\Actions\Branch::class,
-    'auth' => \BBCli\BBCli\Actions\Auth::class,
-    'browse' => \BBCli\BBCli\Actions\Browse::class,
-    'upgrade' => \BBCli\BBCli\Actions\Upgrade::class,
-    'env' => \BBCli\BBCli\Actions\Env::class,
+    'branch'   => \BBCli\BBCli\Actions\Branch::class,
+    'auth'     => \BBCli\BBCli\Actions\Auth::class,
+    'browse'   => \BBCli\BBCli\Actions\Browse::class,
+    'upgrade'  => \BBCli\BBCli\Actions\Upgrade::class,
+    'env'      => \BBCli\BBCli\Actions\Env::class,
+    'git'      => \BBCli\BBCli\Actions\Git::class,
+    'install'  => \BBCli\BBCli\Actions\Install::class,
 ];
 
 $staticCommands = [
-    'help' => [
-        'help',
-        '--help',
-        '-h',
-    ],
-    'version' => [
-        'version',
-        '--version',
-        '-v',
-    ],
-    'autocomplete' => [
-        'autocomplete',
-        '--autocomplete',
-    ],
+    'help'         => ['help', '--help', '-h'],
+    'version'      => ['version', '--version', '-v'],
+    'autocomplete' => ['autocomplete', '--autocomplete'],
 ];
+
+// ANSI color palette — defined in src/utils/helpers.php::ansi()
+$c = ansi();
 
 // Check for --project argument and extract it
 $projectUrl = null;
@@ -64,19 +64,108 @@ $filteredArgv = [];
 for ($i = 0; $i < count($argv); $i++) {
     if ($argv[$i] === '--project' && isset($argv[$i + 1])) {
         $projectUrl = $argv[$i + 1];
-        $i++; // Skip the next argument (the URL)
+        $i++;
     } else {
         $filteredArgv[] = $argv[$i];
     }
 }
 $argv = $filteredArgv;
 
-// Set global project URL for use in getRepoPath()
 if ($projectUrl) {
     $GLOBALS['bb_cli_project_url'] = $projectUrl;
 }
 
 $userBaseAction = $argv[1] ?? null;
+
+// Help data — command descriptions, colors (references $c), and subcommand docs
+$commandHelp = [
+    'auth' => [
+        'desc'  => 'Manage Bitbucket credentials',
+        'color' => $c['cyan'],
+        'subs'  => [
+            ['token', 'Save API token credentials (recommended)'],
+            ['save',  'Save app password credentials (legacy)'],
+            ['show',  'Show current auth config'],
+        ],
+    ],
+    'branch' => [
+        'desc'  => 'Work with branches',
+        'color' => $c['green'],
+        'subs'  => [
+            ['list',        'List all branches'],
+            ['user <name>', 'Filter branches by commit author'],
+            ['name <str>',  'Filter branches by name'],
+        ],
+    ],
+    'pr' => [
+        'desc'  => 'Pull request management',
+        'color' => $c['blue'],
+        'subs'  => [
+            ['list [dest]',             'List open PRs, optionally filtered by destination'],
+            ['diff <id>',               'Show PR diff'],
+            ['files <id>',              'List files changed in PR'],
+            ['commits <id>',            'List commits in PR'],
+            ['create <to> [from]',      'Create PR (defaults to current branch)'],
+            ['approve <id>',            'Approve a PR (0 = approve all)'],
+            ['no-approve <id>',         'Remove approval'],
+            ['request-changes <id>',    'Request changes on PR'],
+            ['no-request-changes <id>', 'Remove request-changes'],
+            ['decline <id>',            'Decline a PR'],
+            ['merge <id>',              'Merge a PR'],
+        ],
+    ],
+    'pipeline' => [
+        'desc'  => 'Pipeline status and control',
+        'color' => $c['slate'],
+        'subs'  => [
+            ['latest',                 'Show latest pipeline'],
+            ['get <id>',               'Show pipeline details'],
+            ['wait [id]',              'Wait for pipeline to complete'],
+            ['run <branch>',           'Run default pipeline on branch'],
+            ['custom <branch> <name>', 'Run custom pipeline on branch'],
+        ],
+    ],
+    'env' => [
+        'desc'  => 'Deployment environment variables',
+        'color' => $c['yellow'],
+        'subs'  => [
+            ['list',                                'List environments'],
+            ['variables <env-uuid>',                'List variables for environment'],
+            ['create-variable <env> <k> <v>',       'Create a variable'],
+            ['update-variable <env> <var> <k> <v>', 'Update a variable'],
+        ],
+    ],
+    'browse' => [
+        'desc'  => 'Open repository in browser',
+        'color' => $c['cyan'],
+        'subs'  => [
+            ['browse', 'Open repo in browser (default)'],
+            ['show',   'Print repo URL'],
+        ],
+    ],
+    'git' => [
+        'desc'  => 'Git credential helper setup',
+        'color' => $c['red'],
+        'subs'  => [
+            ['setup',  'Install credential helper for Bitbucket (auto-auth for git)'],
+            ['remove', 'Uninstall credential helper'],
+        ],
+    ],
+    'install' => [
+        'desc'  => 'Install bb to PATH',
+        'color' => $c['gray'],
+        'subs'  => [
+            ['install', 'Copy bb binary to ~/.local/bin (or first writable PATH dir)'],
+        ],
+    ],
+    'upgrade' => [
+        'desc'  => 'Self-update bb-cli',
+        'color' => $c['gray'],
+        'subs'  => [
+            ['upgrade', 'Check for and install latest release from GitHub'],
+        ],
+    ],
+];
 
 // Print version
 if (in_array($userBaseAction, $staticCommands['version'])) {
@@ -84,13 +173,95 @@ if (in_array($userBaseAction, $staticCommands['version'])) {
     exit(0);
 }
 
-// Print help
+// Print global help
 if (is_null($userBaseAction) || in_array($userBaseAction, $staticCommands['help'])) {
-    o('Available actions:', 'green');
-    o(array_keys($actions), 'green');
-    o('', 'white');
-    o('Global options:', 'green');
-    o('  --project <repo>  Work with repository (e.g., --project "owner/repo" or --project "https://bitbucket.org/owner/repo")', 'yellow');
+    $R = $c['R'];
+
+    echo "\n";
+    echo $c['bold'].$c['cyan'];
+    echo "  ██████╗ ██████╗      ██████╗██╗     ██╗\n";
+    echo "  ██╔══██╗██╔══██╗    ██╔════╝██║     ██║\n";
+    echo "  ██████╔╝██████╔╝    ██║     ██║     ██║\n";
+    echo "  ██╔══██╗██╔══██╗    ██║     ██║     ██║\n";
+    echo "  ██████╔╝██████╔╝    ╚██████╗███████╗██║\n";
+    echo "  ╚═════╝ ╚═════╝      ╚═════╝╚══════╝╚═╝\n";
+    echo $R;
+    echo $c['gray']."  Bitbucket CLI  ".$c['dim']."v".APP_VERSION.$R."  ".$c['gray']."·  bitbucket.org\n".$R;
+    echo "\n";
+
+    echo $c['bold'].$c['white']."  USAGE".$R."\n";
+    echo "    ".$c['cyan']."bb".$R." ".$c['yellow']."<command>".$R." ".$c['gray']."[subcommand] [args] [--project owner/repo]\n".$R;
+    echo "\n";
+
+    echo $c['bold'].$c['white']."  COMMANDS\n".$R;
+    echo "\n";
+
+    $separators = [
+        "·:·:· bb-cli ·:·:·",
+        "=-[ bb-cli ]=-",
+        "»»· bb-cli ·««",
+        "·····[ bb-cli ]·····",
+        "──< bb-cli >──",
+        "-=[ bb-cli ]=-",
+        "~*~ bb-cli ~*~",
+        "·[ bb-cli ]·",
+    ];
+    $sep = $separators[array_rand($separators)];
+    $sepLine = $c['dim'].$c['gray'].str_pad(
+        $sep,
+        120,
+        str_repeat('·', 60),
+        STR_PAD_BOTH
+    ).$R;
+
+    $first = true;
+    foreach ($commandHelp as $cmd => $info) {
+        if (!$first) {
+            echo "  ".$sepLine."\n";
+        }
+        $first = false;
+
+        echo "    ".$c['bold'].$info['color'].$cmd.$R;
+        echo str_repeat(' ', max(1, 12 - strlen($cmd)));
+        echo $c['white'].$info['desc'].$R."\n";
+
+        foreach ($info['subs'] as [$sub, $subDesc]) {
+            echo "      ".$c['gray'].$sub.$R;
+            echo str_repeat(' ', max(1, 30 - strlen($sub)));
+            echo $c['dim'].$subDesc.$R."\n";
+        }
+    }
+    echo "\n";
+
+    echo $c['bold'].$c['white']."  GLOBAL OPTIONS\n".$R;
+    echo "\n";
+    echo "    ".$c['yellow']."--project".$R." ".$c['gray']."<owner/repo>".$R;
+    echo str_repeat(' ', 10);
+    echo $c['dim']."Target a remote repo instead of local git context\n".$R;
+    echo "    ".$c['yellow']."--help".$R.", ".$c['yellow']."-h".$R;
+    echo str_repeat(' ', 20);
+    echo $c['dim']."Show help (global or per-command)\n".$R;
+    echo "    ".$c['yellow']."--version".$R.", ".$c['yellow']."-v".$R;
+    echo str_repeat(' ', 18);
+    echo $c['dim']."Show version\n".$R;
+    echo "\n";
+
+    echo $c['bold'].$c['white']."  EXAMPLES\n".$R;
+    echo "\n";
+    $examples = [
+        ["bb auth token",                 "Set up API token authentication"],
+        ["bb git setup",                  "Configure git to auto-auth with your token"],
+        ["bb pr list",                    "List open PRs in current repo"],
+        ["bb pr create main",             "Open PR from current branch → main"],
+        ["bb branch user rob",            "Branches with Rob's commits"],
+        ["bb pr list --project org/repo", "PRs in a remote repo"],
+    ];
+    foreach ($examples as [$ex, $desc]) {
+        echo "    ".$c['cyan'].$ex.$R;
+        echo str_repeat(' ', max(1, 42 - strlen($ex)));
+        echo $c['dim'].$desc.$R."\n";
+    }
+    echo "\n";
     exit(0);
 }
 
@@ -101,23 +272,57 @@ if (in_array($userBaseAction, $staticCommands['autocomplete'])) {
 }
 
 if (!isset($actions[$userBaseAction])) {
-    o("Given action is invalid: ({$userBaseAction})", 'red');
+    o("Unknown command: {$userBaseAction}", 'red');
+    echo $c['gray']."  Commands: ".$c['R'];
+    echo $c['cyan'].implode($c['gray'].", ".$c['cyan'], array_keys($actions)).$c['R'];
+    echo "\n".$c['gray']."  Run ".$c['yellow']."bb --help".$c['gray']." for full usage.".$c['R']."\n\n";
     exit(1);
 }
 
 $actionClass = new $actions[$userBaseAction]();
 $userAction = $argv[2] ?? null;
 
-// Print help for action
+// Print per-command help
 if (in_array($userAction, $staticCommands['help'])) {
-    o('Available methods:', 'green');
-    foreach ($actionClass::AVAILABLE_COMMANDS as $command) {
-        o(implode(",\033[0;90m", explode(',', $command)), 'yellow');
+    $R = $c['R'];
+
+    $subHelp = $commandHelp[$userBaseAction]['subs'] ?? [];
+    $subByAlias = [];
+    foreach ($subHelp as [$sub, $desc]) {
+        $subByAlias[trim(explode(' ', $sub)[0])] = $desc;
     }
+
+    echo "\n";
+    echo "  ".$c['bold'].$c['cyan']."bb ".$userBaseAction.$R;
+    if (isset($commandHelp[$userBaseAction]['desc'])) {
+        echo "  ".$c['dim'].$commandHelp[$userBaseAction]['desc'].$R;
+    }
+    echo "\n\n";
+
+    echo "  ".$c['bold'].$c['white']."SUBCOMMANDS".$R."\n\n";
+
+    foreach ($actionClass::AVAILABLE_COMMANDS as $method => $aliases) {
+        $aliasParts = array_map('trim', explode(',', $aliases));
+        $primary    = $aliasParts[0];
+        $rest       = array_slice($aliasParts, 1);
+
+        echo "    ".$c['cyan'].$primary.$R;
+        if ($rest) {
+            echo "  ".$c['gray']."(".implode(', ', $rest).")".$R;
+        }
+
+        $desc = $subByAlias[$primary] ?? '';
+        if ($desc) {
+            $padLen = max(1, 24 - strlen($primary) - ($rest ? 4 + strlen(implode(', ', $rest)) : 0));
+            echo str_repeat(' ', $padLen).$c['dim'].$desc.$R;
+        }
+        echo "\n";
+    }
+    echo "\n";
     exit(0);
 }
 
-//Print autocomplete for action
+// Print autocomplete for action
 if (in_array($userAction, $staticCommands['autocomplete'])) {
     $actionClass->listCommandsForAutocomplete();
     exit(0);

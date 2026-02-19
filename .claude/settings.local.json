@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cat:*)",
+      "Bash(find:*)",
+      "WebFetch(domain:support.atlassian.com)",
+      "Bash(php:*)",
+      "Bash(php bb.phar:*)",
+      "Bash(./bb branch list:*)",
+      "Bash(./bb:*)",
+      "Bash(/Users/rob/workspace/bb-cli/bb:*)"
+    ]
+  }
+}

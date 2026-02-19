@@ -64,7 +64,7 @@ class Base
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
         curl_setopt($ch, CURLOPT_HTTPHEADER, [
             'Content-Type: application/json',
-            'Authorization: Basic '.base64_encode(userConfig('auth.username').':'.userConfig('auth.appPassword')),
+            'Authorization: Basic '.$this->buildAuthHeader(),
         ]);
 
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, strtoupper($method));
@@ -142,6 +142,28 @@ class Base
         sort($commands);
 
         echo implode(' ', $commands);
+    }
+
+    /**
+     * Builds the Basic Auth header value based on configured auth type.
+     * Supports both API tokens (email:token) and legacy app passwords (username:appPassword).
+     *
+     * @return string base64-encoded credentials
+     */
+    private function buildAuthHeader()
+    {
+        $authType = userConfig('auth.type');
+
+        if ($authType === 'api_token') {
+            $identity = userConfig('auth.email');
+            $secret   = userConfig('auth.apiToken');
+        } else {
+            // Legacy app password — also handles configs written before auth.type existed
+            $identity = userConfig('auth.username');
+            $secret   = userConfig('auth.appPassword');
+        }
+
+        return base64_encode($identity.':'.$secret);
     }
 
     /**
