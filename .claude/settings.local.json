@@ -8,7 +8,8 @@
       "Bash(php bb.phar:*)",
       "Bash(./bb branch list:*)",
       "Bash(./bb:*)",
-      "Bash(/Users/rob/workspace/bb-cli/bb:*)"
+      "Bash(composer install:*)",
+      "Bash(make test:*)"
     ]
   }
 }
