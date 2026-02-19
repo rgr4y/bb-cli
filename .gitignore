@@ -4,6 +4,7 @@
 /composer.lock
 /vendor
 /tests/phpunit.phar
+/.phpunit.result.cache
 /bb.phar
 /bb
 /demo.gif
