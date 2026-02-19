@@ -8,7 +8,7 @@ A PHP CLI tool for interacting with the Bitbucket Cloud REST API.
 php --define phar.readonly=0 create-phar.php
 ```
 
-Produces `bb.phar` in the project root. Requires PHP 8.3+ with `curl`, `mbstring`, `json` extensions.
+Produces `bb.phar` in the project root. Requires PHP 8.1+ with `curl`, `mbstring`, `json` extensions.
 
 ## Architecture
 

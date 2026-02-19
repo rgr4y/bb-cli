@@ -102,6 +102,7 @@ $commandHelp = [
         'color' => $c['blue'],
         'subs'  => [
             ['list [dest]',             'List open PRs, optionally filtered by destination'],
+            ['view <id>',               'Show PR detail: title, state, reviewers, link'],
             ['diff <id>',               'Show PR diff'],
             ['files <id>',              'List files changed in PR'],
             ['commits <id>',            'List commits in PR'],
@@ -110,7 +111,7 @@ $commandHelp = [
             ['no-approve <id>',         'Remove approval'],
             ['request-changes <id>',    'Request changes on PR'],
             ['no-request-changes <id>', 'Remove request-changes'],
-            ['decline <id>',            'Decline a PR'],
+            ['decline <id>',            'Decline / close a PR'],
             ['merge <id>',              'Merge a PR'],
         ],
     ],

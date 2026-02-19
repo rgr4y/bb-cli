@@ -21,17 +21,18 @@ class Pr extends Base
      * Pull request commands.
      */
     const AVAILABLE_COMMANDS = [
-        'list' => 'list, l',
-        'diff' => 'diff, d',
-        'files' => 'files',
-        'commits' => 'commits, c',
-        'approve' => 'approve, a',
-        'unApprove' => 'no-approve, na',
-        'requestChanges' => 'request-changes, rc',
+        'list'             => 'list, l',
+        'view'             => 'view, show',
+        'diff'             => 'diff, d',
+        'files'            => 'files',
+        'commits'          => 'commits, checks, c',
+        'approve'          => 'approve, a',
+        'unApprove'        => 'no-approve, na',
+        'requestChanges'   => 'request-changes, rc',
         'unRequestChanges' => 'no-request-changes, nrc',
-        'decline' => 'decline',
-        'merge' => 'merge, m',
-        'create' => 'create',
+        'decline'          => 'decline, close',
+        'merge'            => 'merge, m',
+        'create'           => 'create',
     ];
 
     /**
@@ -81,6 +82,33 @@ class Pr extends Base
         }
 
         o($result, 'yellow');
+    }
+
+    /**
+     * View pull request detail.
+     *
+     * @param int $prNumber
+     * @return void
+     *
+     * @throws \Exception
+     */
+    public function view($prNumber)
+    {
+        $pr = $this->makeRequest('GET', "/pullrequests/{$prNumber}");
+
+        o([
+            'id'          => $pr['id'],
+            'title'       => $pr['title'],
+            'state'       => $pr['state'],
+            'author'      => array_get($pr, 'author.nickname'),
+            'source'      => array_get($pr, 'source.branch.name'),
+            'destination' => array_get($pr, 'destination.branch.name'),
+            'link'        => array_get($pr, 'links.html.href'),
+            'reviewers'   => implode(', ', array_map(fn($r) => $r['display_name'], $pr['reviewers'])),
+            'participants' => implode(' | ', array_filter(array_map(function ($p) {
+                return $p['state'] ? sprintf('%s -> %s', $p['user']['display_name'], $p['state']) : null;
+            }, $pr['participants']))),
+        ], 'yellow');
     }
 
     /**

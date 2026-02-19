@@ -16,7 +16,7 @@ and environments from your terminal — no browser required.
 
 ## Requirements
 
-- PHP 8.3+ with `curl`, `mbstring`, `json` extensions
+- PHP 8.1+ with `curl`, `mbstring`, `json` extensions
 - A Bitbucket Cloud account with an [API token](https://support.atlassian.com/bitbucket-cloud/docs/api-tokens/)
 
 ## Installation

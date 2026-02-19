@@ -1,7 +1,9 @@
 /.idea
 /.vscode
 /composer.phar
+/composer.lock
 /vendor
+/tests/phpunit.phar
 /bb.phar
 /bb
 /demo.gif
