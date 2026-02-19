@@ -382,6 +382,15 @@ try {
 } catch (\Throwable $e) {
     if (strpos($e->getMessage(), 'Too few arguments') !== false) {
         o('Too few arguments.', 'red');
+        // Print usage hint from help table if available
+        $subs = $commandHelp[$userBaseAction]['subs'] ?? [];
+        foreach ($subs as [$usage, $desc]) {
+            $prefix = strtok($usage, ' ');
+            if ($actionClass->getMethodNameFromAlias($prefix) === $classMethodToCall) {
+                o("Usage: bb {$userBaseAction} {$usage}", 'gray');
+                break;
+            }
+        }
     } else {
         o($e->getMessage(), 'red');
     }
