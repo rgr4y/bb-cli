@@ -1,4 +1,6 @@
-.PHONY: build install clean demo test
+.PHONY: all build install clean demo test
+
+all: build
 
 build:
 	php --define phar.readonly=0 create-phar.php
