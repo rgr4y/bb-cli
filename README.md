@@ -106,8 +106,11 @@ make clean          # remove build artifacts
 
 ## Config
 
-Credentials are stored in `~/.bitbucket-rest-cli-config.json`. The file is
+Credentials are stored in `~/.local/share/bb-cli/config.json`. The file is
 created on first `bb auth` run. Keep it out of version control.
+
+If you have an existing `~/.bitbucket-rest-cli-config.json` from a previous
+install, bb will migrate it automatically on first run.
 
 ## Credits
 
