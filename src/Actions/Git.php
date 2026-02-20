@@ -176,7 +176,12 @@ class Git extends Base
             exit(0);
         }
 
-        if (($auth['type'] ?? '') === 'api_token') {
+        $authType = $auth['type'] ?? '';
+
+        if ($authType === 'repo_access_token') {
+            $username = 'x-token-auth';
+            $password = $auth['repoToken'] ?? '';
+        } elseif ($authType === 'api_token') {
             $username = 'x-bitbucket-api-token-auth';
             $password = $auth['apiToken'] ?? '';
         } else {
@@ -187,6 +192,10 @@ class Git extends Base
         if (!$password) {
             exit(0);
         }
+
+        // Strip any newlines — they would break the line-based git credential protocol.
+        $username = str_replace(["\n", "\r"], '', $username);
+        $password = str_replace(["\n", "\r"], '', $password);
 
         echo "username={$username}\n";
         echo "password={$password}\n";

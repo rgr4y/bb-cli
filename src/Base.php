@@ -64,7 +64,7 @@ class Base
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
         curl_setopt($ch, CURLOPT_HTTPHEADER, [
             'Content-Type: application/json',
-            'Authorization: Basic '.$this->buildAuthHeader(),
+            'Authorization: '.$this->buildAuthHeader(),
         ]);
 
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, strtoupper($method));
@@ -150,9 +150,17 @@ class Base
      *
      * @return string base64-encoded credentials
      */
-    private function buildAuthHeader()
+    private function buildAuthHeader(): string
     {
         $authType = userConfig('auth.type');
+
+        if ($authType === 'repo_access_token') {
+            $token = userConfig('auth.repoToken', '');
+            if (!$token) {
+                throw new \Exception('Incomplete credentials. Run "bb auth repo-token" to reconfigure.', 1);
+            }
+            return 'Bearer ' . $token;
+        }
 
         if ($authType === 'api_token') {
             $identity = userConfig('auth.email', '');
@@ -167,7 +175,7 @@ class Base
             throw new \Exception('Incomplete credentials. Run "bb auth token" to reconfigure.', 1);
         }
 
-        return base64_encode($identity.':'.$secret);
+        return 'Basic ' . base64_encode($identity.':'.$secret);
     }
 
     /**

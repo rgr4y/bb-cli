@@ -26,9 +26,10 @@ class Auth extends Base
      * Authentication commans.
      */
     const AVAILABLE_COMMANDS = [
-        'saveApiToken' => 'token',
+        'saveApiToken'  => 'token',
+        'saveRepoToken' => 'repo-token',
         'saveLoginInfo' => 'save',
-        'show' => 'show',
+        'show'          => 'show',
     ];
 
     /**
@@ -115,6 +116,53 @@ class Auth extends Base
     }
 
     /**
+     * Saves repository access token credentials.
+     * Repo access tokens are scoped to a single repository.
+     *
+     * @return void
+     */
+    public function saveRepoToken()
+    {
+        o('This action requires a Bitbucket repository access token:', 'yellow');
+        o('Create one at: Repository Settings > Security > Access tokens', 'yellow');
+        o('Repo access tokens are scoped to a single repository.', 'yellow');
+
+        $existing  = userConfig('auth');
+        $defaultToken = ($existing && isset($existing['repoToken'])) ? $existing['repoToken'] : '';
+
+        $repoToken = getUserInput('Repo access token: ', $defaultToken);
+
+        $saveToFile = userConfig([
+            'auth' => [
+                'type'      => 'repo_access_token',
+                'repoToken' => $repoToken,
+            ],
+        ]);
+
+        if ($saveToFile === false) {
+            o('Cannot save file to: '.config('userConfigFilePath'), 'red');
+            exit(1);
+        }
+
+        o('Verifying credentials...', 'cyan');
+
+        try {
+            $user = $this->makeRequest('GET', '/user', [], false);
+            o('Authenticated as: '.$user['display_name'].' ('.$user['account_id'].')', 'green');
+            o('Auth info saved.', 'green');
+        } catch (\Exception $e) {
+            o('Credential verification failed: '.$e->getMessage(), 'red');
+            $saveAnyway = getUserInput('Save anyway? [y/N]: ');
+            if (strtolower(trim($saveAnyway)) !== 'y') {
+                userConfig(['auth' => null]);
+                o('Auth info discarded.', 'yellow');
+                exit(1);
+            }
+            o('Auth info saved (unverified).', 'yellow');
+        }
+    }
+
+    /**
      * Shows config information (user detail).
      *
      * @return void
@@ -129,11 +177,10 @@ class Auth extends Base
         }
 
         // Mask the secret value before displaying
-        if (isset($authInfo['appPassword'])) {
-            $authInfo['appPassword'] = str_repeat('*', 8);
-        }
-        if (isset($authInfo['apiToken'])) {
-            $authInfo['apiToken'] = str_repeat('*', 8);
+        foreach (['appPassword', 'apiToken', 'repoToken'] as $field) {
+            if (isset($authInfo[$field])) {
+                $authInfo[$field] = str_repeat('*', 8);
+            }
         }
 
         o($authInfo);

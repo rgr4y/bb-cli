@@ -152,7 +152,13 @@ if (!function_exists('getUserInput')) {
         $prompt = $default !== '' ? $question.' ['.$default.']: ' : $question.' ';
         $input = readline($prompt);
 
-        if ($input === false || $input === '') {
+        if ($input === false) {
+            // Ctrl+D / EOF — don't silently accept the default, abort.
+            fwrite(STDERR, PHP_EOL . 'Input cancelled.' . PHP_EOL);
+            exit(1);
+        }
+
+        if ($input === '') {
             return $default;
         }
 
@@ -260,7 +266,7 @@ if (!function_exists('userConfig')) {
 
         if (is_null($key)) {
             // Decrypt secrets for full-config reads too
-            foreach (['apiToken', 'appPassword'] as $field) {
+            foreach (['apiToken', 'appPassword', 'repoToken'] as $field) {
                 if (!empty($config['auth'][$field])) {
                     $plain = decryptSecret($config['auth'][$field]);
                     if ($plain !== null) {
@@ -277,7 +283,7 @@ if (!function_exists('userConfig')) {
 
             // Encrypt secrets before writing
             if ($arrayKey === 'auth' && is_array($value)) {
-                foreach (['apiToken', 'appPassword'] as $field) {
+                foreach (['apiToken', 'appPassword', 'repoToken'] as $field) {
                     if (!empty($value[$field])) {
                         $value[$field] = encryptSecret($value[$field]);
                     }
@@ -296,7 +302,7 @@ if (!function_exists('userConfig')) {
 
         // Decrypt secrets on read
         if (isset($config['auth'])) {
-            foreach (['apiToken', 'appPassword'] as $field) {
+            foreach (['apiToken', 'appPassword', 'repoToken'] as $field) {
                 if (!empty($config['auth'][$field])) {
                     $plain = decryptSecret($config['auth'][$field]);
                     if ($plain !== null) {

@@ -1,3 +1,6 @@
+# demo.gif is force-added via `make demo` (git add -f) so it can be committed
+# despite being in .gitignore. This is intentional — it's a generated artifact
+# that lives in the repo for README/documentation purposes only.
 Output demo.gif
 Set FontSize 13
 Set FontFamily "Monaco"

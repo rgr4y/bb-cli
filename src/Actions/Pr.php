@@ -168,7 +168,10 @@ class Pr extends Base
             ];
             if (!empty($comment['inline'])) {
                 $entry['file'] = array_get($comment, 'inline.path');
-                $entry['line'] = array_get($comment, 'inline.to');
+                $line = array_get($comment, 'inline.to');
+                if ($line !== null) {
+                    $entry['line'] = $line;
+                }
             }
             $result[] = $entry;
         }
@@ -393,7 +396,8 @@ class Pr extends Base
         ];
 
         if (!empty($prDetail['title'])) {
-            $data = ['id' => $data['id'], 'title' => $prDetail['title'], 'state' => $prDetail['state']] + $data;
+            // Insert title/state after id, before the rest — array_merge preserves order without + operator ambiguity.
+            $data = array_merge(['id' => $data['id'], 'title' => $prDetail['title'], 'state' => $prDetail['state']], $data);
         }
 
         if ($reviewers)    $data['reviewers']    = $reviewers;

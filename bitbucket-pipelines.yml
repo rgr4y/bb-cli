@@ -1,0 +1,8 @@
+image: php:8.3-cli
+
+pipelines:
+  default:
+    - step:
+        name: Test
+        script:
+          - php tests/phpunit.phar --no-coverage
