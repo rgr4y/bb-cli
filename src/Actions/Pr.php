@@ -42,7 +42,7 @@ class Pr extends Base
      * @param string $destination
      * @return void
      */
-    public function list($destination = '')
+    public function list(string $destination = ''): void
     {
         $prs = [];
 
@@ -87,7 +87,7 @@ class Pr extends Base
      *
      * @throws \Exception
      */
-    public function view($prNumber)
+    public function view(int $prNumber): void
     {
         $pr = $this->makeRequest('GET', "/pullrequests/{$prNumber}");
         $data = $this->buildPrData($pr, $pr);
@@ -106,7 +106,7 @@ class Pr extends Base
      * @param int $prNumber
      * @return void
      */
-    public function diff($prNumber)
+    public function diff(int $prNumber): void
     {
         o($this->makeRequest('GET', "/pullrequests/{$prNumber}/diff"), 'yellow');
     }
@@ -119,7 +119,7 @@ class Pr extends Base
      *
      * @throws \Exception
      */
-    public function files($prNumber)
+    public function files(int $prNumber): void
     {
         $response = array_get($this->makeRequest('GET', "/pullrequests/{$prNumber}/diffstat"), 'values');
 
@@ -135,7 +135,7 @@ class Pr extends Base
      *
      * @throws \Exception
      */
-    public function commits($prNumber)
+    public function commits(int $prNumber): void
     {
         $result = [];
 
@@ -154,7 +154,7 @@ class Pr extends Base
      *
      * @throws \Exception
      */
-    public function comments($prNumber)
+    public function comments(int $prNumber): void
     {
         $response = $this->makeRequest('GET', "/pullrequests/{$prNumber}/comments");
         $result = [];
@@ -214,7 +214,7 @@ class Pr extends Base
      *
      * @throws \Exception
      */
-    public function approve(...$prNumbers)
+    public function approve(int ...$prNumbers): void
     {
         if (empty($prNumbers)) {
             throw new \Exception('Pr number required.', 1);
@@ -247,7 +247,7 @@ class Pr extends Base
      *
      * @throws \Exception
      */
-    public function unApprove($prNumber)
+    public function unApprove(int $prNumber): void
     {
         o($this->makeRequest('DELETE', "/pullrequests/{$prNumber}/approve"));
     }
@@ -260,7 +260,7 @@ class Pr extends Base
      *
      * @throws \Exception
      */
-    public function requestChanges($prNumber)
+    public function requestChanges(int $prNumber): void
     {
         o($this->makeRequest('POST', "/pullrequests/{$prNumber}/request-changes"));
     }
@@ -273,7 +273,7 @@ class Pr extends Base
      *
      * @throws \Exception
      */
-    public function unRequestChanges($prNumber)
+    public function unRequestChanges(int $prNumber): void
     {
         o($this->makeRequest('DELETE', "/pullrequests/{$prNumber}/request-changes"));
     }
@@ -286,7 +286,7 @@ class Pr extends Base
      *
      * @throws \Exception
      */
-    public function decline($prNumber)
+    public function decline(int $prNumber): void
     {
         $this->makeRequest('POST', "/pullrequests/{$prNumber}/decline");
         o('OK.', 'green');
@@ -300,7 +300,7 @@ class Pr extends Base
      *
      * @throws \Exception
      */
-    public function merge($prNumber)
+    public function merge(int $prNumber): void
     {
         o($this->makeRequest('POST', "/pullrequests/{$prNumber}/merge")['state'], 'green');
     }
@@ -315,7 +315,7 @@ class Pr extends Base
      *
      * @throws \Exception
      */
-    public function create($fromBranch, $toBranch = '', $addDefaultReviewers = 1)
+    public function create(string $fromBranch, string $toBranch = '', int $addDefaultReviewers = 1): void
     {
         if (empty($toBranch)) {
             $toBranch = $fromBranch;
@@ -339,7 +339,7 @@ class Pr extends Base
      *
      * @throws \Exception
      */
-    private function bulkCreate($toBranches, $fromBranch, $addDefaultReviewers = true)
+    private function bulkCreate(array $toBranches, string $fromBranch, bool $addDefaultReviewers = true): void
     {
         $responses = [];
 
@@ -428,7 +428,7 @@ class Pr extends Base
      *
      * @throws \Exception
      */
-    private function defaultReviewers()
+    private function defaultReviewers(): array
     {
         $currentUserUuid = $this->currentUserUuid();
         $response = $this->makeRequest('GET', '/default-reviewers');
@@ -446,7 +446,7 @@ class Pr extends Base
      *
      * @throws \Exception
      */
-    private function currentUserUuid()
+    private function currentUserUuid(): string
     {
         $response = $this->makeRequest(
             'GET',

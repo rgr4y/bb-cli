@@ -94,7 +94,80 @@ $userBaseAction = $argv[1] ?? null;
 
 // Help data — command descriptions, colors (references $c), and subcommand docs
 // Ordered by frequency: daily drivers first, setup/meta last.
+// Commands ordered with rare commands first and common commands last,
+// so common commands appear at the bottom of help output (easier to see)
 $commandHelp = [
+    'upgrade' => [
+        'desc'  => 'Self-update bb-cli',
+        'color' => $c['gray'],
+        'subs'  => [
+            ['upgrade', 'Check for and install latest release from GitHub'],
+        ],
+    ],
+    'install' => [
+        'desc'  => 'Install bb to PATH',
+        'color' => $c['gray'],
+        'subs'  => [
+            ['install', 'Copy bb binary to ~/.local/bin (or first writable PATH dir)'],
+        ],
+    ],
+    'git' => [
+        'desc'  => 'Git credential helper setup',
+        'color' => $c['red'],
+        'subs'  => [
+            ['setup',  'Install credential helper for Bitbucket (auto-auth for git)'],
+            ['remove', 'Uninstall credential helper'],
+        ],
+    ],
+    'auth' => [
+        'desc'  => 'Manage Bitbucket credentials',
+        'color' => $c['cyan'],
+        'subs'  => [
+            ['token',         'Save API token credentials (account-wide, recommended)'],
+            ['repo-token',    'Save repo access token credentials (single repo)'],
+            ['save',          'Save app password credentials (legacy)'],
+            ['composer-auth', 'Generate Composer auth.json for private Bitbucket packages'],
+            ['show',          'Show current auth config'],
+        ],
+    ],
+    'browse' => [
+        'desc'  => 'Open repository in browser',
+        'color' => $c['cyan'],
+        'subs'  => [
+            ['browse', 'Open repo in browser (default)'],
+            ['show',   'Print repo URL'],
+        ],
+    ],
+    'env' => [
+        'desc'  => 'Deployment environment variables',
+        'color' => $c['yellow'],
+        'subs'  => [
+            ['list',                                'List environments'],
+            ['variables <env-uuid>',                'List variables for environment'],
+            ['create-variable <env> <k> <v>',       'Create a variable'],
+            ['update-variable <env> <var> <k> <v>', 'Update a variable'],
+        ],
+    ],
+    'pipeline' => [
+        'desc'  => 'Pipeline status and control',
+        'color' => $c['slate'],
+        'subs'  => [
+            ['latest',                 'Show latest pipeline'],
+            ['get <id>',               'Show pipeline details'],
+            ['wait [id]',              'Wait for pipeline to complete'],
+            ['run <branch>',           'Run default pipeline on branch'],
+            ['custom <branch> <name>', 'Run custom pipeline on branch'],
+        ],
+    ],
+    'branch' => [
+        'desc'  => 'Work with branches',
+        'color' => $c['green'],
+        'subs'  => [
+            ['list',        'List all branches'],
+            ['user <name>', 'Filter branches by commit author'],
+            ['name <str>',  'Filter branches by name'],
+        ],
+    ],
     'pr' => [
         'desc'  => 'Pull request management',
         'color' => $c['blue'],
@@ -114,80 +187,7 @@ $commandHelp = [
             ['merge <id>',              'Merge a PR'],
         ],
     ],
-    'branch' => [
-        'desc'  => 'Work with branches',
-        'color' => $c['green'],
-        'subs'  => [
-            ['list',        'List all branches'],
-            ['user <name>', 'Filter branches by commit author'],
-            ['name <str>',  'Filter branches by name'],
-        ],
-    ],
-    'pipeline' => [
-        'desc'  => 'Pipeline status and control',
-        'color' => $c['slate'],
-        'subs'  => [
-            ['latest',                 'Show latest pipeline'],
-            ['get <id>',               'Show pipeline details'],
-            ['wait [id]',              'Wait for pipeline to complete'],
-            ['run <branch>',           'Run default pipeline on branch'],
-            ['custom <branch> <name>', 'Run custom pipeline on branch'],
-        ],
-    ],
-    'env' => [
-        'desc'  => 'Deployment environment variables',
-        'color' => $c['yellow'],
-        'subs'  => [
-            ['list',                                'List environments'],
-            ['variables <env-uuid>',                'List variables for environment'],
-            ['create-variable <env> <k> <v>',       'Create a variable'],
-            ['update-variable <env> <var> <k> <v>', 'Update a variable'],
-        ],
-    ],
-    'browse' => [
-        'desc'  => 'Open repository in browser',
-        'color' => $c['cyan'],
-        'subs'  => [
-            ['browse', 'Open repo in browser (default)'],
-            ['show',   'Print repo URL'],
-        ],
-    ],
-    'auth' => [
-        'desc'  => 'Manage Bitbucket credentials',
-        'color' => $c['cyan'],
-        'subs'  => [
-            ['token',         'Save API token credentials (account-wide, recommended)'],
-            ['repo-token',    'Save repo access token credentials (single repo)'],
-            ['save',          'Save app password credentials (legacy)'],
-            ['composer-auth', 'Generate Composer auth.json for private Bitbucket packages'],
-            ['show',          'Show current auth config'],
-        ],
-    ],
-    'git' => [
-        'desc'  => 'Git credential helper setup',
-        'color' => $c['red'],
-        'subs'  => [
-            ['setup',  'Install credential helper for Bitbucket (auto-auth for git)'],
-            ['remove', 'Uninstall credential helper'],
-        ],
-    ],
-    'install' => [
-        'desc'  => 'Install bb to PATH',
-        'color' => $c['gray'],
-        'subs'  => [
-            ['install', 'Copy bb binary to ~/.local/bin (or first writable PATH dir)'],
-        ],
-    ],
-    'upgrade' => [
-        'desc'  => 'Self-update bb-cli',
-        'color' => $c['gray'],
-        'subs'  => [
-            ['upgrade', 'Check for and install latest release from GitHub'],
-        ],
-    ],
 ];
-
-$commandHelp = array_reverse($commandHelp); // Show more common commands first in help output
 
 // Print version
 if (in_array($userBaseAction, $staticCommands['version'])) {

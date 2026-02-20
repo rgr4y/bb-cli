@@ -49,7 +49,7 @@ class Base
      * @throws \Exception
      * @see    https://developer.atlassian.com/cloud/bitbucket/rest
      */
-    public function makeRequest($method = 'GET', $url = '', $payload = [], $isRepositoryUrl = true)
+    public function makeRequest(string $method = 'GET', string $url = '', array $payload = [], bool $isRepositoryUrl = true): mixed
     {
         $this->checkAuth();
 
@@ -115,7 +115,7 @@ class Base
      * @param  string $alias
      * @return mixed
      */
-    public function getMethodNameFromAlias($alias)
+    public function getMethodNameFromAlias(string $alias): string|false
     {
         foreach (static::AVAILABLE_COMMANDS as $method => $methodAliases) {
             $methodAliases = array_map('trim', explode(', ', $methodAliases));
@@ -133,7 +133,7 @@ class Base
      *
      * @return void
      */
-    public function listCommandsForAutocomplete()
+    public function listCommandsForAutocomplete(): void
     {
         $commands = array_map(function($aliases) {
             return trim(explode(',', $aliases)[0]);
@@ -186,7 +186,7 @@ class Base
      *
      * @return void
      */
-    private function checkAuth()
+    private function checkAuth(): void
     {
         if (!userConfig('auth')) {
             o('Not authenticated. Run "bb auth token" first.', 'red');

@@ -1,7 +1,7 @@
 <?php
 
 if (!function_exists('array_get')) {
-    function array_get($array, $key, $default = null)
+    function array_get(mixed $array, mixed $key, mixed $default = null): mixed
     {
         if (is_null($key)) {
             return $array;
@@ -24,7 +24,7 @@ if (!function_exists('array_get')) {
 }
 
 if (!function_exists('getRepoPath')) {
-    function getRepoPath()
+    function getRepoPath(): string
     {
         // Check if project URL is provided via --project argument
         if (isset($GLOBALS['bb_cli_project_url'])) {
@@ -69,7 +69,7 @@ if (!function_exists('ansi')) {
      *
      * @return array<string,string>
      */
-    function ansi()
+    function ansi(): array
     {
         // Palette based on Bitbucket's UI colors:
         // cyan/teal  = Bitbucket icon + active nav  (#00C7E6 → 38;5;45)
@@ -97,7 +97,7 @@ if (!function_exists('ansi')) {
 }
 
 if (!function_exists('o')) {
-    function o($data, $color = 'white', $prefix = '', $end = "\033[0m".PHP_EOL)
+    function o(mixed $data, string $color = 'white', string $prefix = '', string $end = "\033[0m".PHP_EOL): void
     {
         // JSON mode: accumulate structured data, dump at shutdown
         if (!empty($GLOBALS['BB_JSON_MODE'])) {
@@ -143,7 +143,7 @@ if (!function_exists('o')) {
 }
 
 if (!function_exists('getUserInput')) {
-    function getUserInput($question, $default = null)
+    function getUserInput(string $question, ?string $default = null): string
     {
         if (is_null($default)) {
             $default = '';
@@ -153,7 +153,7 @@ if (!function_exists('getUserInput')) {
         $input = readline($prompt);
 
         if ($input === false) {
-            // readline() returns false on Ctrl+D (EOF). Treat as cancellation, not as "accept default".
+            // Ctrl+D / EOF — don't silently accept the default, abort.
             fwrite(STDERR, PHP_EOL . 'Input cancelled.' . PHP_EOL);
             exit(1);
         }
@@ -250,7 +250,7 @@ if (!function_exists('decryptSecret')) {
 }
 
 if (!function_exists('config')) {
-    function config($key, $default = null)
+    function config(string $key, mixed $default = null): mixed
     {
         $appConfig = include __DIR__.'/../../config/app.php';
 
@@ -259,13 +259,15 @@ if (!function_exists('config')) {
 }
 
 if (!function_exists('userConfig')) {
-    function userConfig($key, $default = null)
+    function userConfig(mixed $key, mixed $default = null): mixed
     {
         $userConfigFilePath = config('userConfigFilePath');
 
         $dir = dirname($userConfigFilePath);
         if (!is_dir($dir)) {
-            mkdir($dir, 0700, true);
+            if (!mkdir($dir, 0700, true) && !is_dir($dir)) {
+                throw new \RuntimeException(sprintf('Directory "%s" could not be created.', $dir));
+            }
         }
 
         if (!file_exists($userConfigFilePath)) {

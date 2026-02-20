@@ -7,8 +7,6 @@ use BBCli\BBCli\Base;
 /**
  * Authentication
  * All commands for auth.
- *
- * @see https://bb-cli.github.io/authentication
  */
 class Auth extends Base
 {
@@ -39,7 +37,7 @@ class Auth extends Base
      *
      * @return void
      */
-    public function saveLoginInfo()
+    public function saveLoginInfo(): void
     {
         o('App passwords are being deprecated. Use "bb auth token" instead.', 'yellow');
         o('https://support.atlassian.com/bitbucket-cloud/docs/app-passwords/', 'green');
@@ -75,7 +73,7 @@ class Auth extends Base
      *
      * @return void
      */
-    public function saveApiToken()
+    public function saveApiToken(): void
     {
         o('This action requires a Bitbucket API token:', 'yellow');
         o('Create one at: Profile Settings > Security > API Tokens', 'yellow');
@@ -128,7 +126,7 @@ class Auth extends Base
      *
      * @return void
      */
-    public function saveRepoToken()
+    public function saveRepoToken(): void
     {
         o('This action requires a Bitbucket repository access token:', 'yellow');
         o('Create one at: Repository Settings > Security > Access tokens', 'yellow');
@@ -157,7 +155,7 @@ class Auth extends Base
         o('Verifying repository access...', 'cyan');
 
         try {
-            $repoPath   = $this->getRepoPath();
+            $repoPath   = getRepoPath();
             $repository = $this->makeRequest('GET', '/repositories/' . $repoPath, [], false);
             $repoName   = $repository['full_name'] ?? $repoPath;
             o('Repository access token verified for: ' . $repoName, 'green');
@@ -181,7 +179,7 @@ class Auth extends Base
      * @param  string|null $outputPath  Path to write auth.json (optional)
      * @return void
      */
-    public function composerAuth($outputPath = null)
+    public function composerAuth(?string $outputPath = null): void
     {
         $auth = userConfig('auth');
 
@@ -233,7 +231,7 @@ class Auth extends Base
      *
      * @return void
      */
-    public function show()
+    public function show(): void
     {
         $authInfo = userConfig('auth');
 

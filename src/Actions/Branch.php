@@ -32,7 +32,7 @@ class Branch extends Base
      * @param  string $user
      * @return void
      */
-    public function user($user)
+    public function user(string $user): void
     {
         $this->list($user);
     }
@@ -43,7 +43,7 @@ class Branch extends Base
      * @param  string $branchName
      * @return void
      */
-    public function name($branchName)
+    public function name(string $branchName): void
     {
         $this->list(null, $branchName);
     }
@@ -58,7 +58,7 @@ class Branch extends Base
      * @return array|void
      * @throws \Exception
      */
-    public function list($user = null, $branch = null, $page = 1, $return = false)
+    public function list(?string $user = null, ?string $branch = null, int $page = 1, bool $return = false): mixed
     {
         $result = [];
 

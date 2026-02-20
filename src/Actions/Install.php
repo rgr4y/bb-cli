@@ -20,7 +20,7 @@ class Install extends Base
      * Ordered list of preferred install locations.
      * First one found on PATH wins; ~/.local/bin is the fallback (created if needed).
      */
-    private function candidates()
+    private function candidates(): array
     {
         $home = getenv('HOME');
         return [
@@ -36,7 +36,7 @@ class Install extends Base
      *
      * @return void
      */
-    public function install()
+    public function install(): void
     {
         $selfPath = \Phar::running(false) ?: realpath($_SERVER['argv'][0]);
 
@@ -92,7 +92,7 @@ class Install extends Base
      * @param  string $dir
      * @return void
      */
-    private function addToPath($dir)
+    private function addToPath(string $dir): void
     {
         $shell  = basename(getenv('SHELL') ?: 'bash');
         $rcFile = getenv('HOME') . ($shell === 'zsh' ? '/.zshrc' : '/.bashrc');

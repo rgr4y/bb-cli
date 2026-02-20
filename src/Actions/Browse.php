@@ -30,7 +30,7 @@ class Browse extends Base
      * @return void
      * @throws \Exception
      */
-    public function browse()
+    public function browse(): void
     {
         $bitbucketUrl = 'https://bitbucket.org/'.getRepoPath();
 
@@ -58,7 +58,7 @@ class Browse extends Base
      * @return void
      * @throws \Exception
      */
-    public function show()
+    public function show(): void
     {
         o('https://bitbucket.org/'.getRepoPath());
     }

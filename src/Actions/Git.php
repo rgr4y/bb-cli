@@ -38,7 +38,7 @@ class Git extends Base
     /**
      * Directory for bb-cli data files.
      */
-    private function dataDir()
+    private function dataDir(): string
     {
         $base = getenv('XDG_DATA_HOME') ?: (getenv('HOME') . '/.local/share');
         return $base . '/bb-cli';
@@ -47,7 +47,7 @@ class Git extends Base
     /**
      * Path to the installed credential helper binary.
      */
-    private function helperPath()
+    private function helperPath(): string
     {
         return $this->dataDir() . '/git-credential-bb';
     }
@@ -58,7 +58,7 @@ class Git extends Base
      *
      * @return void
      */
-    public function setup()
+    public function setup(): void
     {
         $auth = userConfig('auth');
 
@@ -123,7 +123,7 @@ class Git extends Base
      *
      * @return void
      */
-    public function remove()
+    public function remove(): void
     {
         $helperPath = $this->helperPath();
 
@@ -148,7 +148,7 @@ class Git extends Base
      * @param  string $operation get|store|erase
      * @return void
      */
-    public static function handleCredentialProtocol($operation)
+    public static function handleCredentialProtocol(string $operation): void
     {
         if ($operation !== 'get') {
             exit(0);

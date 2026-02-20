@@ -35,7 +35,7 @@ class Pipeline extends Base
      * @param  bool $return
      * @return void
      */
-    public function get($pipeLineNumber, $return = false)
+    public function get(int $pipeLineNumber, bool $return = false): mixed
     {
         $response = $this->makeRequest('GET', "/pipelines/{$pipeLineNumber}");
 
@@ -66,7 +66,7 @@ class Pipeline extends Base
      * @param  int $pipeLineNumber
      * @return void
      */
-    public function wait($pipeLineNumber = null)
+    public function wait(?int $pipeLineNumber = null): void
     {
         if (is_null($pipeLineNumber)) {
             $pipeLineNumber = $this->getLatestPipelineId();
@@ -90,7 +90,7 @@ class Pipeline extends Base
     /**
      * Gets details of latest pipeline.
      */
-    public function latest()
+    public function latest(): mixed
     {
         return $this->get($this->getLatestPipelineId());
     }
@@ -98,7 +98,7 @@ class Pipeline extends Base
     /**
      * Run pipeline for given branch.
      */
-    public function run($branch)
+    public function run(string $branch): void
     {
         $response = $this->makeRequest('POST', '/pipelines/', [
             'target' => [
@@ -114,7 +114,7 @@ class Pipeline extends Base
     /**
      * Run pipeline for given branch on given pipeline.
      */
-    public function custom($branch, $pipeline)
+    public function custom(string $branch, string $pipeline): void
     {
         $response = $this->makeRequest('POST', '/pipelines/', [
             'target' => [
@@ -142,7 +142,7 @@ class Pipeline extends Base
     /**
      * For the last deploy running on the pipeline.
      */
-    private function getLatestPipelineId()
+    private function getLatestPipelineId(): int
     {
         return $this->makeRequest('GET', '/pipelines/')['size'];
     }

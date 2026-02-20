@@ -6,8 +6,6 @@ use BBCli\BBCli\Base;
 
 /**
  * Self Update for BB-CLI
- *
- * @see https://bb-cli.github.io/docs/upgrade
  */
 class Upgrade extends Base
 {
@@ -26,7 +24,7 @@ class Upgrade extends Base
      *
      * @return void
      */
-    public function index()
+    public function index(): void
     {
         $opts = [
             'http' => [
@@ -43,7 +41,10 @@ class Upgrade extends Base
                 'https://api.github.com/repos/bb-cli/bb-cli/releases/latest',
                 false,
                 $context
-            )
+            ),
+            false,
+            512,
+            JSON_THROW_ON_ERROR
         );
 
         if (APP_VERSION < $repo->tag_name) {

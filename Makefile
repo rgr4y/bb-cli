@@ -3,7 +3,7 @@
 all: build
 
 build:
-	php --define phar.readonly=0 create-phar.php
+	php --define phar.readonly=0 bin/create-phar.php
 
 install: build
 	mkdir -p ~/.local/bin
