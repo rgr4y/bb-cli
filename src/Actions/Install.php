@@ -49,7 +49,7 @@ class Install extends Base
         $destDir  = null;
 
         foreach ($this->candidates() as $candidate) {
-            if (is_dir($candidate) && in_array($candidate, $pathDirs)) {
+            if (is_dir($candidate) && in_array($candidate, $pathDirs) && is_writable($candidate)) {
                 $destDir = $candidate;
                 break;
             }

@@ -46,10 +46,13 @@ class Auth extends Base
 
         $existing    = userConfig('auth');
         $defaultUser = ($existing && isset($existing['username'])) ? $existing['username'] : '';
-        $defaultPass = ($existing && isset($existing['appPassword'])) ? $existing['appPassword'] : '';
+        $hasPass     = ($existing && isset($existing['appPassword'])) && $existing['appPassword'] !== '';
 
         $username    = getUserInput('Username: ', $defaultUser);
-        $appPassword = getUserInput('App password: ', $defaultPass);
+        $appPassword = getUserInput('App password' . ($hasPass ? ' (leave empty to keep existing): ' : ': '), '');
+        if ($appPassword === '' && $hasPass) {
+            $appPassword = $existing['appPassword'];
+        }
 
         $saveToFile = userConfig([
             'auth' => [
@@ -78,12 +81,15 @@ class Auth extends Base
         o('Create one at: Profile Settings > Security > API Tokens', 'yellow');
         o('https://support.atlassian.com/bitbucket-cloud/docs/api-tokens/', 'green');
 
-        $existing = userConfig('auth');
+        $existing     = userConfig('auth');
         $defaultEmail = ($existing && isset($existing['email'])) ? $existing['email'] : '';
-        $defaultToken = ($existing && isset($existing['apiToken'])) ? $existing['apiToken'] : '';
+        $hasToken     = ($existing && isset($existing['apiToken'])) && $existing['apiToken'] !== '';
 
         $email    = getUserInput('Atlassian account email: ', $defaultEmail);
-        $apiToken = getUserInput('API token: ', $defaultToken);
+        $apiToken = getUserInput('API token' . ($hasToken ? ' (leave empty to keep existing): ' : ': '), '');
+        if ($apiToken === '' && $hasToken) {
+            $apiToken = $existing['apiToken'];
+        }
 
         $saveToFile = userConfig([
             'auth' => [
@@ -129,9 +135,12 @@ class Auth extends Base
         o('Repo access tokens are scoped to a single repository.', 'yellow');
 
         $existing  = userConfig('auth');
-        $defaultToken = ($existing && isset($existing['repoToken'])) ? $existing['repoToken'] : '';
+        $hasToken  = ($existing && isset($existing['repoToken'])) && $existing['repoToken'] !== '';
 
-        $repoToken = getUserInput('Repo access token: ', $defaultToken);
+        $repoToken = getUserInput('Repo access token' . ($hasToken ? ' (leave empty to keep existing): ' : ': '), '');
+        if ($repoToken === '' && $hasToken) {
+            $repoToken = $existing['repoToken'];
+        }
 
         $saveToFile = userConfig([
             'auth' => [
@@ -145,11 +154,13 @@ class Auth extends Base
             exit(1);
         }
 
-        o('Verifying credentials...', 'cyan');
+        o('Verifying repository access...', 'cyan');
 
         try {
-            $user = $this->makeRequest('GET', '/user', [], false);
-            o('Authenticated as: '.$user['display_name'].' ('.$user['account_id'].')', 'green');
+            $repoPath   = $this->getRepoPath();
+            $repository = $this->makeRequest('GET', '/repositories/' . $repoPath, [], false);
+            $repoName   = $repository['full_name'] ?? $repoPath;
+            o('Repository access token verified for: ' . $repoName, 'green');
             o('Auth info saved.', 'green');
         } catch (\Exception $e) {
             o('Credential verification failed: '.$e->getMessage(), 'red');

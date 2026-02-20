@@ -6,6 +6,7 @@ build:
 	php --define phar.readonly=0 create-phar.php
 
 install: build
+	mkdir -p ~/.local/bin
 	cp bb ~/.local/bin/bb
 
 demo: install

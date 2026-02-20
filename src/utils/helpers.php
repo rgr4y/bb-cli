@@ -65,7 +65,7 @@ if (!function_exists('getRepoPath')) {
 if (!function_exists('ansi')) {
     /**
      * Returns the ANSI 256-color palette used by the help renderer in bin/bb.
-     * Keys: R, bold, dim, red, orange, yellow, green, teal, blue, purple, gray, white.
+     * Keys: R, bold, dim, cyan, blue, slate, white, gray, red, yellow, green.
      *
      * @return array<string,string>
      */
@@ -175,6 +175,11 @@ if (!function_exists('machineKey')) {
      */
     function machineKey(): string
     {
+        static $key = null;
+        if ($key !== null) {
+            return $key;
+        }
+
         $uid = function_exists('posix_getuid') ? posix_getuid() : getenv('UID');
 
         // macOS: Hardware UUID via system_profiler
@@ -184,7 +189,8 @@ if (!function_exists('machineKey')) {
             ?: shell_exec("system_profiler SPHardwareDataType 2>/dev/null | awk '/Hardware UUID/ {print $3}'")
             ?: 'fallback-no-machine-id');
 
-        return hash('sha256', "bb-cli:{$uid}:{$machineId}", true);
+        $key = hash('sha256', "bb-cli:{$uid}:{$machineId}", true);
+        return $key;
     }
 }
 
@@ -195,8 +201,14 @@ if (!function_exists('encryptSecret')) {
      */
     function encryptSecret(string $plaintext): string
     {
-        $iv  = openssl_random_pseudo_bytes(16);
+        $iv = openssl_random_pseudo_bytes(16);
+        if ($iv === false) {
+            throw new \RuntimeException('Failed to generate IV for secret encryption.');
+        }
         $enc = openssl_encrypt($plaintext, 'AES-256-CBC', machineKey(), OPENSSL_RAW_DATA, $iv);
+        if ($enc === false) {
+            throw new \RuntimeException('Failed to encrypt secret.');
+        }
         return base64_encode($iv) . ':' . base64_encode($enc);
     }
 }
@@ -228,8 +240,7 @@ if (!function_exists('decryptSecret')) {
 
         if ($plain === false) {
             throw new \Exception(
-                "Your token is invalid or corrupt. Please request a new one at:\n" .
-                "https://id.atlassian.com/manage-profile/security/api-tokens",
+                "Stored credential is invalid or corrupt. Please re-enter it by running \"bb auth\".",
                 1
             );
         }

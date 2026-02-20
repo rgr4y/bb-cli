@@ -145,10 +145,11 @@ class Base
     }
 
     /**
-     * Builds the Basic Auth header value based on configured auth type.
-     * Supports both API tokens (email:token) and legacy app passwords (username:appPassword).
+     * Builds the Authorization header value based on configured auth type.
+     * Supports repo access tokens (Bearer), API tokens (email:token Basic),
+     * and legacy app passwords (username:appPassword Basic).
      *
-     * @return string base64-encoded credentials
+     * @return string Fully formatted Authorization header value (e.g. "Bearer <token>" or "Basic <base64>")
      */
     private function buildAuthHeader(): string
     {
@@ -172,7 +173,8 @@ class Base
         }
 
         if (!$identity || !$secret) {
-            throw new \Exception('Incomplete credentials. Run "bb auth token" to reconfigure.', 1);
+            $cmd = ($authType === 'api_token') ? 'bb auth token' : 'bb auth save';
+            throw new \Exception('Incomplete credentials. Run "' . $cmd . '" to reconfigure.', 1);
         }
 
         return 'Basic ' . base64_encode($identity.':'.$secret);
