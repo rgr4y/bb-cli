@@ -179,9 +179,12 @@ class Git extends Base
         $authType = $auth['type'] ?? '';
 
         if ($authType === 'repo_access_token') {
+            // Bitbucket repo access tokens use a static username per the git HTTPS protocol spec.
             $username = 'x-token-auth';
             $password = $auth['repoToken'] ?? '';
         } elseif ($authType === 'api_token') {
+            // Bitbucket API tokens use a static username per the git HTTPS protocol spec.
+            // See: https://support.atlassian.com/bitbucket-cloud/docs/api-tokens/
             $username = 'x-bitbucket-api-token-auth';
             $password = $auth['apiToken'] ?? '';
         } else {
@@ -193,7 +196,8 @@ class Git extends Base
             exit(0);
         }
 
-        // Strip any newlines — they would break the line-based git credential protocol.
+        // Strip newlines from credentials — they would break the line-based git credential protocol
+        // (each field must be exactly "key=value\n"). This is intentional protocol compliance, not sanitization.
         $username = str_replace(["\n", "\r"], '', $username);
         $password = str_replace(["\n", "\r"], '', $password);
 

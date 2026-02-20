@@ -396,7 +396,8 @@ class Pr extends Base
         ];
 
         if (!empty($prDetail['title'])) {
-            // Insert title/state after id, before the rest — array_merge preserves order without + operator ambiguity.
+            // array_merge intentionally used here (not +): we want title/state inserted after id with defined key order.
+            // The duplicate 'id' key in the left array is harmless — array_merge keeps the last occurrence.
             $data = array_merge(['id' => $data['id'], 'title' => $prDetail['title'], 'state' => $prDetail['state']], $data);
         }
 

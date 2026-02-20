@@ -153,7 +153,7 @@ if (!function_exists('getUserInput')) {
         $input = readline($prompt);
 
         if ($input === false) {
-            // Ctrl+D / EOF — don't silently accept the default, abort.
+            // readline() returns false on Ctrl+D (EOF). Treat as cancellation, not as "accept default".
             fwrite(STDERR, PHP_EOL . 'Input cancelled.' . PHP_EOL);
             exit(1);
         }
