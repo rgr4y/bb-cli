@@ -97,6 +97,10 @@ class Install extends Base
         $shell  = basename(getenv('SHELL') ?: 'bash');
         $rcFile = getenv('HOME') . ($shell === 'zsh' ? '/.zshrc' : '/.bashrc');
 
+        if (file_exists($rcFile) && strpos(file_get_contents($rcFile), $dir) !== false) {
+            return;
+        }
+
         $line = "\nexport PATH=\"{$dir}:\$PATH\" # added by bb-cli\n";
 
         file_put_contents($rcFile, $line, FILE_APPEND);

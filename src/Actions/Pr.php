@@ -381,8 +381,8 @@ class Pr extends Base
         ));
 
         $participants = implode(' | ', array_filter(array_map(function ($p) {
-            return $p['state'] ? sprintf('%s → %s', $p['user']['display_name'], $p['state']) : null;
-        }, $prDetail['participants'] ?? [])));
+            return !empty($p['state']) ? sprintf('%s → %s', $p['user']['display_name'], $p['state']) : null;
+        }, $prDetail['participants'] ?? []), fn($v) => $v !== null));
 
         $data = [
             'id'          => $prInfo['id'],

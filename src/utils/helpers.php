@@ -173,7 +173,18 @@ if (!function_exists('userConfig')) {
     function userConfig($key, $default = null)
     {
         $userConfigFilePath = config('userConfigFilePath');
-        $config = json_decode(file_get_contents($userConfigFilePath), true);
+
+        $dir = dirname($userConfigFilePath);
+        if (!is_dir($dir)) {
+            mkdir($dir, 0700, true);
+        }
+
+        if (!file_exists($userConfigFilePath)) {
+            file_put_contents($userConfigFilePath, '{}');
+            chmod($userConfigFilePath, 0600);
+        }
+
+        $config = json_decode(file_get_contents($userConfigFilePath), true) ?? [];
 
         if (is_null($key)) {
             return $config;
@@ -183,10 +194,12 @@ if (!function_exists('userConfig')) {
             $arrayKey = key($key);
             $config[$arrayKey] = $key[$arrayKey];
 
-            return file_put_contents(
+            $result = file_put_contents(
                 $userConfigFilePath,
                 json_encode($config, JSON_PRETTY_PRINT)
             );
+            chmod($userConfigFilePath, 0600);
+            return $result;
         }
 
         return array_get($config, $key, $default);

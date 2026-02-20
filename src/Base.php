@@ -155,12 +155,16 @@ class Base
         $authType = userConfig('auth.type');
 
         if ($authType === 'api_token') {
-            $identity = userConfig('auth.email');
-            $secret   = userConfig('auth.apiToken');
+            $identity = userConfig('auth.email', '');
+            $secret   = userConfig('auth.apiToken', '');
         } else {
             // Legacy app password — also handles configs written before auth.type existed
-            $identity = userConfig('auth.username');
-            $secret   = userConfig('auth.appPassword');
+            $identity = userConfig('auth.username', '');
+            $secret   = userConfig('auth.appPassword', '');
+        }
+
+        if (!$identity || !$secret) {
+            throw new \Exception('Incomplete credentials. Run "bb auth token" to reconfigure.', 1);
         }
 
         return base64_encode($identity.':'.$secret);

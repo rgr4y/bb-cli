@@ -1,11 +1,11 @@
 <?php
 
 $home    = getenv('HOME');
-$newPath = $home.'/.local/share/bb-cli/config.json';
+$newPath = getenv('BB_CLI_CONFIG') ?: $home.'/.local/share/bb-cli/config.json';
 $oldPath = $home.'/.bitbucket-rest-cli-config.json';
 
-// Migrate legacy config to new location on first use
-if (!file_exists($newPath) && file_exists($oldPath)) {
+// Migrate legacy config to new location on first use (skip when overridden via BB_CLI_CONFIG)
+if (!getenv('BB_CLI_CONFIG') && !file_exists($newPath) && file_exists($oldPath)) {
     $dir = dirname($newPath);
     if (!is_dir($dir)) {
         mkdir($dir, 0700, true);
