@@ -20,6 +20,13 @@ tests/phpunit.phar:
 test: tests/phpunit.phar
 	php tests/phpunit.phar
 
+coverage: tests/phpunit.phar
+	mkdir -p docs/coverage
+	php -d pcov.enabled=1 tests/phpunit.phar \
+		--coverage-text \
+		--coverage-clover docs/coverage/coverage.xml \
+		--coverage-html docs/coverage/html
+
 hooks:
 	cp .git-hooks/pre-commit .git/hooks/pre-commit
 	cp .git-hooks/pre-push .git/hooks/pre-push
