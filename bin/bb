@@ -156,10 +156,11 @@ $commandHelp = [
         'desc'  => 'Manage Bitbucket credentials',
         'color' => $c['cyan'],
         'subs'  => [
-            ['token',      'Save API token credentials (account-wide, recommended)'],
-            ['repo-token', 'Save repo access token credentials (single repo)'],
-            ['save',       'Save app password credentials (legacy)'],
-            ['show',       'Show current auth config'],
+            ['token',         'Save API token credentials (account-wide, recommended)'],
+            ['repo-token',    'Save repo access token credentials (single repo)'],
+            ['save',          'Save app password credentials (legacy)'],
+            ['composer-auth', 'Generate Composer auth.json for private Bitbucket packages'],
+            ['show',          'Show current auth config'],
         ],
     ],
     'git' => [

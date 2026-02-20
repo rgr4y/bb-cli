@@ -29,6 +29,7 @@ class Auth extends Base
         'saveApiToken'  => 'token',
         'saveRepoToken' => 'repo-token',
         'saveLoginInfo' => 'save',
+        'composerAuth'  => 'composer-auth',
         'show'          => 'show',
     ];
 
@@ -159,6 +160,60 @@ class Auth extends Base
                 exit(1);
             }
             o('Auth info saved (unverified).', 'yellow');
+        }
+    }
+
+    /**
+     * Generate a Composer auth.json for pulling private Bitbucket packages.
+     * Prints JSON to stdout, and optionally writes it to a file.
+     *
+     * @param  string|null $outputPath  Path to write auth.json (optional)
+     * @return void
+     */
+    public function composerAuth($outputPath = null)
+    {
+        $auth = userConfig('auth');
+
+        if (!$auth) {
+            o('Not authenticated. Run "bb auth token" first.', 'red');
+            exit(1);
+        }
+
+        $authType = $auth['type'] ?? '';
+
+        if ($authType === 'api_token') {
+            $username = 'x-bitbucket-api-token-auth';
+            $password = $auth['apiToken'] ?? '';
+        } elseif ($authType === 'app_password') {
+            $username = $auth['username'] ?? '';
+            $password = $auth['appPassword'] ?? '';
+        } else {
+            o('Repo access tokens are scoped to a single repository and cannot be used for Composer.', 'red');
+            o('Run "bb auth token" to configure an account-wide API token.', 'yellow');
+            exit(1);
+        }
+
+        if (!$username || !$password) {
+            o('Incomplete credentials. Run "bb auth token" to reconfigure.', 'red');
+            exit(1);
+        }
+
+        $json = json_encode([
+            'http-basic' => [
+                'bitbucket.org' => [
+                    'username' => $username,
+                    'password' => $password,
+                ],
+            ],
+        ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . "\n";
+
+        if ($outputPath) {
+            file_put_contents($outputPath, $json);
+            chmod($outputPath, 0600);
+            o('Composer auth.json written to: ' . $outputPath, 'green');
+            o('Add to .gitignore if not already there.', 'yellow');
+        } else {
+            echo $json;
         }
     }
 
