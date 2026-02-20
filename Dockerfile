@@ -1,7 +1,7 @@
 FROM docker.io/library/php:8.3-cli
 WORKDIR /workdir
 ENTRYPOINT [ "/bb" ]
-ADD --chmod=755 bb.phar /bb
+ADD --chmod=755 bb /bb
 RUN <<-EOF
         apt-get update
         apt-get install -y git
