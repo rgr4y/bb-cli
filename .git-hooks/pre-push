@@ -1,0 +1,11 @@
+#!/bin/sh
+echo ""
+echo "  Before pushing — did you update .claude/CLAUDE.md?"
+echo "  (reflects current auth, architecture, dev workflow)"
+echo ""
+printf "  Continue push? [y/N] "
+read answer </dev/tty
+case "$answer" in
+    y|Y) exit 0 ;;
+    *)   echo "  Push cancelled."; exit 1 ;;
+esac

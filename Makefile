@@ -1,4 +1,4 @@
-.PHONY: all build install clean demo test
+.PHONY: all build install clean demo test hooks
 
 all: build
 
@@ -14,6 +14,12 @@ demo: install
 
 test:
 	php tests/phpunit.phar
+
+hooks:
+	cp .git-hooks/pre-commit .git/hooks/pre-commit
+	cp .git-hooks/pre-push .git/hooks/pre-push
+	chmod +x .git/hooks/pre-commit .git/hooks/pre-push
+	@echo "Git hooks installed."
 
 clean:
 	rm -f bb bb.phar demo.gif
