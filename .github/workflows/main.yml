@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - '*'
+  workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
@@ -32,7 +33,7 @@ jobs:
 
     - name: Build
       run: |
-          php --define phar.readonly=0 create-phar.php
+          php --define phar.readonly=0 bin/create-phar.php
 
     - name: Release
       uses: svenstaro/upload-release-action@v2
