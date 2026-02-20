@@ -98,6 +98,20 @@ class Git extends Base
             exit(1);
         }
 
+        // Set user.name globally only if not already configured
+        $existingName = trim(shell_exec('git config --global user.name 2>/dev/null') ?: '');
+        if (!$existingName) {
+            $auth = userConfig('auth');
+            $default = ($auth['type'] ?? '') === 'api_token'
+                ? ($auth['email'] ?? '')
+                : ($auth['username'] ?? '');
+            o('git config --global user.name is not set — required for commit authorship.', 'yellow');
+            $name = getUserInput('Your name: ', $default);
+            if ($name) {
+                exec('git config --global user.name ' . escapeshellarg($name));
+            }
+        }
+
         o('Credential helper installed: ' . $helperPath, 'green');
         o('Scoped to: credential.https://bitbucket.org.helper', 'green');
         o('Git will now use your bb-cli token automatically for Bitbucket repos.', 'green');

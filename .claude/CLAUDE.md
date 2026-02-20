@@ -25,6 +25,13 @@ make build         # rebuild bb.phar
 
 A pre-commit hook runs `make test` automatically — commits will fail if tests don't pass.
 
+**Keep commits clean.** If you make several small iterative commits while working, squash them before moving on:
+
+```bash
+git reset --soft HEAD~n   # squash last n commits back to staged
+git commit --amend        # fold current changes into the previous commit
+```
+
 ## Architecture
 
 - `bin/bb` — main entry point, routes commands to Action classes
