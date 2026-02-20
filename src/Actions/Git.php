@@ -67,13 +67,6 @@ class Git extends Base
             exit(1);
         }
 
-        $defaultUsername = ($auth['type'] ?? '') === 'api_token'
-            ? ($auth['email'] ?? '')
-            : ($auth['username'] ?? '');
-
-        o('Git username for Bitbucket (shows in git log, not used for auth):', 'yellow');
-        $gitUsername = getUserInput('Git username: ', $defaultUsername);
-
         $dataDir    = $this->dataDir();
         $helperPath = $this->helperPath();
 
@@ -103,10 +96,6 @@ class Git extends Base
         if ($rc !== 0) {
             o('Failed to register credential helper in git config.', 'red');
             exit(1);
-        }
-
-        if ($gitUsername) {
-            exec('git config --global user.name ' . escapeshellarg($gitUsername));
         }
 
         o('Credential helper installed: ' . $helperPath, 'green');
