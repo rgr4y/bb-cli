@@ -13,12 +13,12 @@ file_put_contents(
     str_replace(
         array_keys($replacements),
         array_values($replacements),
-        file_get_contents('bin/bb')
+        file_get_contents(dirname(__FILE__).'/../bin/bb')
     )
 );
 
 $phar = new Phar('bb.phar');
-$phar->buildFromDirectory(dirname(__FILE__), '[src|config|phar\-index\.php]');
+$phar->buildFromDirectory(dirname(__FILE__).'/../', '[src|config|phar\-index\.php]');
 $phar->setStub("#!/usr/bin/env php\n".$phar->createDefaultStub($pharIndexFile));
 
 unlink($pharIndexFile);
